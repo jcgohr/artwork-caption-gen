@@ -1,4 +1,4 @@
 
 class Captioner:
-    def caption(image_path:str)->str:
+    def caption(self,image_path:str)->str:
         raise NotImplemented
