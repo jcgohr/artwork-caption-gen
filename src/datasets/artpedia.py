@@ -78,9 +78,6 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
     with open(os.path.join(output_dir,"artpedia.json"),"w",encoding="utf-8") as artpedia_file:
             artpedia_file.write(json.dumps(artpedia_dict,indent=4,ensure_ascii=False))
 
-def download_artpedia(output_dir:str):
+def download_artpedia(output_dir:str,):
     download_artpedia_zip(output_dir)
     download_artpedia_images(output_dir)
-    
-if __name__=="__main__":
-    download_artpedia("artpedia/")
