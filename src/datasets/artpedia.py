@@ -71,20 +71,13 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
                 
     # Write the stat dict if write_stat_dict
     if write_stat_dict:
-        with open(os.path.join(output_dir,"stats.json"),"r",encoding="utf-8") as stat_dict_file:
+        with open(os.path.join(output_dir,"stats.json"),"w",encoding="utf-8") as stat_dict_file:
             stat_dict_file.write(json.dumps(stat_dict,indent=4))
             
     # Write the update artpedia dictionary back to artpedia.json (we added the file paths and removed 404'd images)
-    with open(os.path.join(output_dir,"artpedia.json"),"r",encoding="utf-8") as artpedia_file:
+    with open(os.path.join(output_dir,"artpedia.json"),"w",encoding="utf-8") as artpedia_file:
             artpedia_file.write(json.dumps(artpedia_dict,indent=4,ensure_ascii=False))
 
-
-def artpedia_integrity(output_dir:str)->bool:
-    if len(os.listdir(os.path.join(output_dir,IMG_DIR)))!=2930 and os.path.exists(os.path.join(output_dir,"artpedia.json")):
-        return True
-    
-    return False
-    
 def download_artpedia(output_dir:str):
     download_artpedia_zip(output_dir)
     download_artpedia_images(output_dir)
