@@ -1,4 +1,4 @@
-from transformers import MllamaForConditionalGeneration, AutoProcessor
+from transformers import MllamaForConditionalGeneration, MllamaProcessor
 from huggingface_hub import login
 from Captioner import Captioner
 from dotenv import load_dotenv
@@ -8,7 +8,7 @@ import os
 
 
 class LlamaCaptioner(Captioner):
-    def __init__(self,model_id:str,env_path=".env"):
+    def __init__(self,model_id:str,prompt:str,env_path=".env"):
         
         # Login to hugging face to get access to Llama models
         load_dotenv(env_path)
@@ -19,18 +19,27 @@ class LlamaCaptioner(Captioner):
             torch_dtype=torch.bfloat16,
             device_map="auto",
         )
-        self.processor = AutoProcessor.from_pretrained(model_id)
+        self.prompt=prompt
+        self.processor = MllamaProcessor.from_pretrained(model_id)
+        
+        
         
     def caption(self, image_path):
         image = Image.open(image_path)
 
-        prompt = "<|image|><|begin_of_text|> Write a caption for this image"
+        prompt = f"<|image|><|begin_of_text|>{self.prompt}"
         inputs = self.processor(image, prompt, return_tensors="pt").to(self.model.device)
 
-        output = self.model.generate(**inputs, max_new_tokens=30)
-        print(self.processor.decode(output[0]))
+        output = self.model.generate(**inputs, max_new_tokens=75)
+        prompt_len = inputs.input_ids.shape[-1]
+
+        generated_ids = output[:, prompt_len:]
+
+        generated_text = self.processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+
+        return generated_text
         
         
 if __name__=="__main__":
-    captioner=LlamaCaptioner("meta-llama/Llama-3.2-11B-Vision")
+    captioner=LlamaCaptioner("meta-llama/Llama-3.2-11B-Vision","Caption this image")
     captioner.caption("misc/test.jpg")
