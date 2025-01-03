@@ -38,4 +38,4 @@ class LlavaCaptioner(Captioner):
     
 if __name__=="__main__":
     llava=LlavaCaptioner("Caption this image")
-    llava.caption("misc/test.jpg")
+    llava.caption("misc/test.jpg")   
