@@ -1,0 +1,6 @@
+huggingface_hub==0.16.4
+Pillow==11.1.0
+python-dotenv==1.0.1
+torch==2.3.0+cu121
+tqdm==4.65.2
+transformers==4.30.2
