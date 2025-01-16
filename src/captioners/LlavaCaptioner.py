@@ -1,5 +1,5 @@
 from transformers import AutoProcessor, LlavaForConditionalGeneration
-from Captioner import Captioner
+from .Captioner import Captioner
 from PIL import Image
 import torch
 

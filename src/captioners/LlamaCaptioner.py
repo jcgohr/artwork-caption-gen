@@ -1,6 +1,6 @@
 from transformers import MllamaForConditionalGeneration, MllamaProcessor
 from huggingface_hub import login
-from Captioner import Captioner
+from .Captioner import Captioner
 from dotenv import load_dotenv
 from PIL import Image
 import torch
