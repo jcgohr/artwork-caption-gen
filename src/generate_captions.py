@@ -1,17 +1,8 @@
-from captioners import * 
 from parsers import CaptionGenerationParser  
+from captioners import * 
+import json
 import os
 
-"""
-Step 1: Parse a json file to get the file paths
-Step 2: Open the file and caption the image
-Step 3: Store the caption into a captions json file     
-
-Questions:
-Should all captions be stored in the same file?
-Should we make a new caption file for every run of this script?
-
-"""
 
 FP_KEY="file_path"
 captioners=globals()
@@ -28,4 +19,9 @@ captions={}
 for class_name in confs:
     model=captioners[class_name](*confs[class_name])
     for key in data:
+        if key not in captions:
+            captions[key]={}
         captions[key][class_name]=model.caption(data[key][FP_KEY])
+
+with open(output,"w",encoding="utf-8") as output_file:
+    output_file.write(json.dumps(captions,indent=4,ensure_ascii=False))

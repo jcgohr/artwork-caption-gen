@@ -57,7 +57,7 @@ class CaptionGenerationParser:
             bool: True if valid, False otherwise
         """
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r',encoding='utf-8') as f:
                 json.load(f)
             return True
         except (json.JSONDecodeError, FileNotFoundError):
@@ -81,7 +81,7 @@ class CaptionGenerationParser:
             raise ValueError(
                 f"Input metadata file '{args.metadata}' does not exist or is not a valid JSON file"
             )
-        with open(args.metadata, 'r') as f:
+        with open(args.metadata, 'r',encoding='utf-8') as f:
             args.metadata = json.load(f)
             
         # Validate and load config file
