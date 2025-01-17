@@ -2,17 +2,18 @@ import torch
 import os
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 DEFAULT_PROMPT = [
     {"role": "system",
         "content": (
-        "You are a sentence classifier that is given a sentence by the user which describes a painting, and you output a '1' or '0' based on the following criteria: "
-        "You output 1 if the sentence primarily describes visual content within the painting. "
-        "You output 0 if the sentence primarily describes contextual information about the painting.")},
+        "You are a sentence classifier that labels a user's sentence based on the criteria they gave you.")},
 
     {"role": "user", 
         "content": "<insert sentence>"}
 ]
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+EXTRA_INSTRUCT = ("Output ONLY the number 1 or the number 0 based on the following criteria: "
+                "Output '1' if the sentence primarily gives visual descriptions. "
+                "Output '0' if the sentence primarily gives contextual information about the painting's history. Sentence: ")
 
 class classifier:
     """
@@ -27,37 +28,65 @@ class classifier:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-    def classify(self, sentences:str)->list[bool]:
+    def classify(self, sentences:list[str])->list[bool]:
         """
         Classify a list of sentences as either 1 (visual), or 0 (contextual)
         """
-        formatted_prompt = self._sentences_to_prompt(sentences)
+        formatted_prompts = self._sentences_to_prompt(sentences, extra_instruct=EXTRA_INSTRUCT)
+        skip_token = "<|start_header_id|>"
+        inputs = self.tokenizer(formatted_prompts, padding=True, padding_side="left", return_tensors="pt").to(self.model.device)
 
-        # Forward pass
-        inputs = self.tokenizer(formatted_prompt, padding=True, return_tensors="pt").to(self.model.device)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            logits = outputs.logits
+        final_logits = [] # Will contain the final logits tensor for each sentence
+        while(True):
+            with torch.no_grad():
+                # Forward pass
+                outputs = self.model(**inputs)
+                logits = outputs.logits
+                predicted_next_token_ids = torch.argmax(logits[:, -1, :], dim=-1).tolist()
+                predicted_next_token_vals = self.tokenizer.convert_ids_to_tokens(predicted_next_token_ids)
+                
+                # If any sentences in the batch generate the skip_token, then continued generation is needed
+                needs_generation = []
+                for idx, value in enumerate(predicted_next_token_vals):
+                    if(value == skip_token):
+                        needs_generation.append(idx)
+                    else:
+                        final_logits.append(logits[idx,-1,:])
+
+                if not needs_generation:
+                    break
+                        
+                # Continue generating sequences if needed
+                for sentence_num in needs_generation:
+                    # Add generated token to end of input
+                    inputs["input_ids"][sentence_num] = torch.cat(
+                        [inputs["input_ids"][sentence_num], torch.tensor([predicted_next_token_ids[sentence_num]], device=inputs["input_ids"].device)]
+                    )
+                    # Update attention mask for generated token
+                    inputs["attention_mask"][sentence_num] = torch.cat(
+                        [inputs["attention_mask"][sentence_num], torch.tensor([1], device=inputs["attention_mask"].device)]
+                    )
 
         # Get classifications from logits
         id_1 = self.tokenizer.convert_tokens_to_ids("1")
         id_0 = self.tokenizer.convert_tokens_to_ids("0")
-        last_logits = logits[:,-1,:] # shape: (batch_size, 1, vocab_size)
-        # for sentence_logits in last_logits.squeeze(1):
-        #     print(sentence_logits[id_1])
-        #     print(sentence_logits[id_0])
-        #     print(sentence_logits[id_1]>sentence_logits[id_0])
-        predictions = [sentence_logits[id_1] > sentence_logits[id_0] for sentence_logits in last_logits.squeeze(1)]
+        print(final_logits[0][id_1])
+        print(final_logits[0][id_0])
+        print(self.tokenizer.convert_ids_to_tokens(torch.argmax(final_logits[0]).item()))
+        predictions = [logits[id_1] > logits[id_0] for logits in final_logits]
 
         return predictions
 
-    def _sentences_to_prompt(self, sentences:str)->list[str]:
+    def _sentences_to_prompt(self, sentences:str, extra_instruct:str=None)->list[str]:
         """
         Format a list of sentences into proper format for LLM inference
         """
         prompts = []
         for i in range(len(sentences)):
-            self.prompt[1]["content"] = sentences[i]
-            prompts.append(self.tokenizer.apply_chat_template(self.prompt, tokenize=False))
+            if extra_instruct:
+                self.prompt[1]["content"] = extra_instruct + sentences[i]
+            else:
+                self.prompt[1]["content"] = sentences[i]
+            prompts.append(self.tokenizer.apply_chat_template(self.prompt, add_generation_prompt=True, tokenize=False))
 
         return prompts
