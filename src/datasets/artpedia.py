@@ -85,6 +85,8 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
         artpedia_dict[key]["file_path"]=save
         try:
             urllib.request.urlretrieve(url,save)
+            # Normalize the image
+            normalize_image(save)
         except urllib.request.HTTPError as e:
             # If the resource does not exist remove the entry in artpedia.json
             if e.code==404:
