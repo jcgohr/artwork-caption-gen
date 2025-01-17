@@ -1,11 +1,37 @@
-from tqdm import tqdm
 from urllib.parse import unquote
+from tqdm import tqdm
+from PIL import Image 
 import urllib.request
 import zipfile 
 import shutil
+import math
 import json
 import os
 import re
+
+
+
+def normalize_image(img_path,max_pixels=1000):
+    """
+    Resizes to fit within a 1000x1000 frame
+    """
+    Image.MAX_IMAGE_PIXELS = 1000000000 
+    im = Image.open(img_path)
+    w,h = im.size
+    # If no resizing is required, just return
+    if w<=max_pixels and h<=max_pixels:
+        return
+     
+    max_pix_dim=w
+    if h>w:
+        max_pix_dim=h
+    
+    scaling_factor=math.ceil(max_pix_dim/max_pixels)
+    im=im.resize((w//scaling_factor,h//scaling_factor))
+    im.save(img_path)
+    im.close()
+    
+
 
 def clean_filename(filename):
     """Strips all characters that cannot be in a filename."""
