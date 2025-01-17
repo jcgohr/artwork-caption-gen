@@ -15,7 +15,7 @@ def normalize_image(img_path,max_pixels=1000):
     """
     Resizes to fit within a 1000x1000 frame
     """
-    Image.MAX_IMAGE_PIXELS = 1000000000 
+    Image.MAX_IMAGE_PIXELS = 2000000000 
     im = Image.open(img_path)
     w,h = im.size
     # If no resizing is required, just return
