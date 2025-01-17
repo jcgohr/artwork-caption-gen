@@ -1,7 +1,7 @@
 import argparse
 import json
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 class CaptionGenerationParser:
     """
@@ -32,10 +32,17 @@ class CaptionGenerationParser:
         )
         
         self.parser.add_argument(
-            '-c', '--classes',
+            '-c', '--config',
+            type=str,
+            required=True,
+            help='Path to JSON config file containing class parameters'
+        )
+
+        self.parser.add_argument(
+            '-cl', '--classes',
             type=str,
             nargs='+',
-            help='Optional list of classes to filter the metadata',
+            help='Optional list of class names to filter the metadata',
             default=None
         )
     
@@ -59,20 +66,31 @@ class CaptionGenerationParser:
     def parse_args(self) -> argparse.Namespace:
         """
         Parse and validate the command line arguments.
+        Loads both metadata and config JSON files into dictionaries.
         
         Returns:
-            argparse.Namespace: Parsed arguments
+            argparse.Namespace: Parsed arguments with loaded dictionaries
             
         Raises:
-            ValueError: If the input or output paths are invalid
+            ValueError: If the input paths are invalid
         """
         args = self.parser.parse_args()
         
-        # Validate input metadata file
+        # Validate and load metadata file
         if not self._validate_json_file(args.metadata):
             raise ValueError(
                 f"Input metadata file '{args.metadata}' does not exist or is not a valid JSON file"
             )
+        with open(args.metadata, 'r') as f:
+            args.metadata = json.load(f)
+            
+        # Validate and load config file
+        if not self._validate_json_file(args.config):
+            raise ValueError(
+                f"Config file '{args.config}' does not exist or is not a valid JSON file"
+            )
+        with open(args.config, 'r') as f:
+            args.config = json.load(f)
         
         # Create output directory if it doesn't exist
         output_path = Path(args.output)
@@ -85,10 +103,12 @@ if __name__ == '__main__':
     parser = CaptionGenerationParser()
     try:
         args = parser.parse_args()
-        print(f"Metadata file: {args.metadata}")
-        print(f"Output file: {args.output}")
+        print("Loaded metadata dictionary")
         if args.classes:
-            print(f"Classes: {', '.join(args.classes)}")
+            print(f"Filtering for classes: {', '.join(args.classes)}")
+        print("Config parameters:")
+        for class_name, params in args.config.items():
+            print(f"  {class_name}: {params}")
             
     except ValueError as e:
         print(f"Error: {e}")

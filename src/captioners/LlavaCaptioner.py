@@ -5,7 +5,7 @@ import torch
 
 
 class LlavaCaptioner(Captioner):
-    def __init__(self,prompt,llava_model="llava-hf/llava-1.5-7b-hf"):
+    def __init__(self,prompt,llava_model):
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
