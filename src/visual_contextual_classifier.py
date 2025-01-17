@@ -6,14 +6,14 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 DEFAULT_PROMPT = [
     {"role": "system",
         "content": (
-        "You are a sentence classifier that labels a user's sentence based on the criteria they gave you.")},
+        "You are a painting description classifier that outputs ONLY the number '1' or '0'. Output '1' if the description the user gives you contains mostly visual details/descriptions about the painting. If not, output '0'.")},
 
     {"role": "user", 
         "content": "<insert sentence>"}
 ]
-EXTRA_INSTRUCT = ("Output ONLY the number 1 or the number 0 based on the following criteria: "
-                "Output '1' if the sentence primarily gives visual descriptions. "
-                "Output '0' if the sentence primarily gives contextual information about the painting's history. Sentence: ")
+# EXTRA_INSTRUCT = ("Sentence: {sentence}"
+#                 "Output '1' if the sentence describes visual (imagery) descriptions."
+#                 "Output '0' if the sentence gives contextual (history) descriptions.")
 
 class classifier:
     """
@@ -32,8 +32,8 @@ class classifier:
         """
         Classify a list of sentences as either 1 (visual), or 0 (contextual)
         """
-        formatted_prompts = self._sentences_to_prompt(sentences, extra_instruct=EXTRA_INSTRUCT)
-        skip_token = "<|start_header_id|>"
+        formatted_prompts = self._sentences_to_prompt(sentences)
+        skip_token = self.tokenizer.bos_token
         inputs = self.tokenizer(formatted_prompts, padding=True, padding_side="left", return_tensors="pt").to(self.model.device)
 
         final_logits = [] # Will contain the final logits tensor for each sentence
@@ -84,7 +84,7 @@ class classifier:
         prompts = []
         for i in range(len(sentences)):
             if extra_instruct:
-                self.prompt[1]["content"] = extra_instruct + sentences[i]
+                self.prompt[1]["content"] = extra_instruct.format(sentence=sentences[i])
             else:
                 self.prompt[1]["content"] = sentences[i]
             prompts.append(self.tokenizer.apply_chat_template(self.prompt, add_generation_prompt=True, tokenize=False))
