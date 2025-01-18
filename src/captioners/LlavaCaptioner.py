@@ -5,9 +5,10 @@ import torch
 
 
 class LlavaCaptioner(Captioner):
-    def __init__(self,prompt,llava_model):
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    def __init__(self,prompt,llava_model,device=None):
+        self.device=device
+        if not device:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.model = LlavaForConditionalGeneration.from_pretrained(
             llava_model, 

@@ -8,10 +8,11 @@ import os
 
 
 class LlamaCaptioner(Captioner):
-    def __init__(self,model_id:str,prompt:str,env_path=".env"):
+    def __init__(self,model_id:str,prompt:str,env_path=".env",device=None):
         
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device=device
+        if not device:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # Login to hugging face to get access to Llama models
         load_dotenv(env_path)
         login(os.getenv("HF_TOKEN"))
