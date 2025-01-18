@@ -16,15 +16,20 @@ class LlamaCaptioner(Captioner):
         load_dotenv(env_path)
         login(os.getenv("HF_TOKEN"))
         
-        dmap="auto":
-        if self.device="cuda"
-            dmap="cuda"
+  
+            
             
         self.model = MllamaForConditionalGeneration.from_pretrained(
             model_id,
             torch_dtype=torch.bfloat16,
-            device_map="dmap",
-        ).to(self.device)
+            device_map="auto",
+        )
+        
+        try:
+            model.to(device)
+        except:
+            print("Model was not successfully loaded to GPU")
+        
         self.prompt=prompt
         self.processor = MllamaProcessor.from_pretrained(model_id)
         
