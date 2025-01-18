@@ -12,7 +12,7 @@ def multi_gpu_captioning(captioners:list[str],params:list[list],data:dict):
     
     gpus = torch.cuda.device_count()
     if gpus==1:
-        raise ValueError("Only 1 GPU detected, try Captioner.sequential_captioning")
+        raise ValueError("Only 1 GPU detected, try Captioner.sequential_captioning instead")
     
 if __name__=="__main__":
     multi_gpu_captioning([],[],{})
