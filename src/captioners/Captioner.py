@@ -1,6 +1,5 @@
+from .utils import get_captioners
 from tqdm import tqdm
-import importlib
-import inspect
 import torch
 
 class Captioner:
@@ -10,10 +9,7 @@ class Captioner:
 
 FP_KEY="file_path"
 
-def get_captioners():
-    module = importlib.import_module('.', package='captioners')
-    classes = inspect.getmembers(module, inspect.isclass)
-    return {k:v for k,v in classes}
+
 
 def sequential_captioning(captioners:list[str],params:list[list],data:dict):
     captions={}
