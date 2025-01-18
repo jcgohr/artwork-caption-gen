@@ -1,0 +1,18 @@
+{
+    "2": {
+        "title": "Maestà (Cimabue)",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Cimabue_-_Maest%C3%A0_du_Louvre.jpg",
+        "year": 1280,
+        "visual_sentences": [
+            "It is also stylistically earlier to that work, being painted without pseudo-perspective, and having the angels around the Virgin simply placed one above the other, rather than being spatially arranged.",
+            "The throne is similar to the Maestà painted by Cimabue in the Basilica of San Francesco di Assisi (1288–1292)."
+        ],
+        "contextual_sentences": [
+            "The Maestà is a painting by the Italian artist   Cimabue, painted around 1280 and housed in Musée du Louvre of Paris, France.",
+            "The work is considered to be from around 1280, thus preceding the Santa Trinita Maestà.",
+            "This work established a new canon for the Madonna with Child theme, which was subsequently used by other painters, such as Duccio di Buoninsegna in his Rucellai Maestà."
+        ],
+        "split": "train",
+        "file_path": "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/images/Cimabue_-_Maestà_du_Louvre.jpg"
+    }
+}

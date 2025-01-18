@@ -6,7 +6,7 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 DEFAULT_PROMPT = [
     {"role": "system",
         "content": (
-        "You are a painting description classifier that outputs ONLY the number '1' or '0'. Output '1' if the description the user gives you contains mostly visual details/descriptions about the painting. If not, output '0'.")},
+        "You are a painting description classifier that outputs ONLY the number '1' or '0'. Output '1' if the description the user gives you contains primarily visual details about the painting. If it doesn't, output '0'.")},
 
     {"role": "user", 
         "content": "<insert sentence>"}
@@ -70,10 +70,7 @@ class classifier:
         # Get classifications from logits
         id_1 = self.tokenizer.convert_tokens_to_ids("1")
         id_0 = self.tokenizer.convert_tokens_to_ids("0")
-        print(final_logits[0][id_1])
-        print(final_logits[0][id_0])
-        print(self.tokenizer.convert_ids_to_tokens(torch.argmax(final_logits[0]).item()))
-        predictions = [logits[id_1] > logits[id_0] for logits in final_logits]
+        predictions = [(logits[id_1] > logits[id_0]).item() for logits in final_logits]
 
         return predictions
 
