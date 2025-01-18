@@ -41,6 +41,19 @@ ARTPEDIA_LINK="https://aimagelab.ing.unimore.it/imagelab/uploadedFiles/artpedia.
 ZIP="artpedia.zip"
 IMG_DIR="images/"
 
+
+def return_splits(artpedia_dict)->tuple[dict,dict,dict]:
+    splits={
+        "test":{},
+        "val":{},
+        "train":{},
+    }
+    
+    for key in artpedia_dict:
+        splits[artpedia_dict[key]["split"]][key]=artpedia_dict[key]
+    
+    return splits["test"],splits["val"],splits["train"]
+ 
 def download_artpedia_zip(output_dir:str,redownload=False):
 
     if os.path.exists(output_dir) and not redownload:
@@ -101,11 +114,21 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
     if write_stat_dict:
         with open(os.path.join(output_dir,"stats.json"),"w",encoding="utf-8") as stat_dict_file:
             stat_dict_file.write(json.dumps(stat_dict,indent=4))
+    
+    test,val,train=return_splits(artpedia_dict)
+
+    # Write test,val, and train sets with 404's removed and file paths
+    with open(os.path.join(output_dir,"artpedia_test.json"),"w",encoding="utf-8") as artpedia_file:
+            artpedia_file.write(json.dumps(test,indent=4,ensure_ascii=False))
+    
+    with open(os.path.join(output_dir,"artpedia_val.json"),"w",encoding="utf-8") as artpedia_file:
+            artpedia_file.write(json.dumps(val,indent=4,ensure_ascii=False))
+    
+    with open(os.path.join(output_dir,"artpedia_train.json"),"w",encoding="utf-8") as artpedia_file:
+            artpedia_file.write(json.dumps(train,indent=4,ensure_ascii=False))
             
-    # Write the update artpedia dictionary back to artpedia.json (we added the file paths and removed 404'd images)
-    with open(os.path.join(output_dir,"artpedia.json"),"w",encoding="utf-8") as artpedia_file:
-            artpedia_file.write(json.dumps(artpedia_dict,indent=4,ensure_ascii=False))
 
 def download_artpedia(output_dir:str,):
     download_artpedia_zip(output_dir)
     download_artpedia_images(output_dir)
+    
