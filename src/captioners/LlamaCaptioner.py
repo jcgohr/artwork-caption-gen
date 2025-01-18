@@ -10,15 +10,21 @@ import os
 class LlamaCaptioner(Captioner):
     def __init__(self,model_id:str,prompt:str,env_path=".env"):
         
+        
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # Login to hugging face to get access to Llama models
         load_dotenv(env_path)
         login(os.getenv("HF_TOKEN"))
         
+        dmap="auto":
+        if self.device="cuda"
+            dmap="cuda"
+            
         self.model = MllamaForConditionalGeneration.from_pretrained(
             model_id,
             torch_dtype=torch.bfloat16,
-            device_map="auto",
-        )
+            device_map="dmap",
+        ).to(self.device)
         self.prompt=prompt
         self.processor = MllamaProcessor.from_pretrained(model_id)
         
