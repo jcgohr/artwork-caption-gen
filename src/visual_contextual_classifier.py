@@ -6,7 +6,25 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 DEFAULT_PROMPT = [
     {"role": "system",
         "content": (
-        "You are a painting description classifier that outputs ONLY the number '1' or '0'. Output '1' if the description the user gives you contains primarily visual details about the painting. If it doesn't, output '0'.")},
+        "You are a painting caption classifier that outputs ONLY the number '1' or '0'. " 
+        "Output '1' if the caption the user gives you contains mostly details of visual contents within the painting. "
+        "Output '0' if the caption the user gives you contains mostly details of context that isn't describing visual details in the painting.")},
+
+    {"role": "user", 
+        "content": (
+        "She's sitting on a seat covered with a rich drape acting as carpet too, and she has on her knees an open book, symbol of the happening Scriptures.")},
+
+    {"role": "assistant",
+        "content": (
+        "1")},
+
+    {"role": "user", 
+        "content": (
+        "Nor did it emphasise the significance of the manuscript or the rough manner in which Christ seems to energetically leaf through it, his play watched on by a near-indulgent Mary.")},
+
+    {"role": "assistant",
+        "content": (
+        "0")},
 
     {"role": "user", 
         "content": "<insert sentence>"}
@@ -81,9 +99,9 @@ class classifier:
         prompts = []
         for i in range(len(sentences)):
             if extra_instruct:
-                self.prompt[1]["content"] = extra_instruct.format(sentence=sentences[i])
+                self.prompt[-1]["content"] = extra_instruct.format(sentence=sentences[i])
             else:
-                self.prompt[1]["content"] = sentences[i]
+                self.prompt[-1]["content"] = sentences[i]
             prompts.append(self.tokenizer.apply_chat_template(self.prompt, add_generation_prompt=True, tokenize=False))
 
         return prompts
