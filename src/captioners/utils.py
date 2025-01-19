@@ -1,6 +1,8 @@
+from dotenv import load_dotenv
 from math import ceil
 import importlib
 import inspect
+import os
 
 def get_captioners():
     module = importlib.import_module('.', package='captioners')
@@ -18,3 +20,11 @@ def split_dict(dictionary, n):
         sections.append(section)
     
     return sections
+
+
+def load_huggingface_environment(env_path,vars=["HF_TOKEN","HF_HOME"])->dict[str,str]:
+    envs={}
+    load_dotenv(env_path)
+    for env in vars:
+        envs[env]=os.getenv(env)
+    return envs

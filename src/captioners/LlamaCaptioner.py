@@ -1,6 +1,7 @@
 from transformers import MllamaForConditionalGeneration, MllamaProcessor
 from huggingface_hub import login
 from .Captioner import Captioner
+from .utils import load_huggingface_environment
 from dotenv import load_dotenv
 from PIL import Image
 import torch
@@ -14,8 +15,8 @@ class LlamaCaptioner(Captioner):
         if not device:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # Login to hugging face to get access to Llama models
-        load_dotenv(env_path)
-        login(os.getenv("HF_TOKEN"))
+        envs=load_huggingface_environment(env_path)
+        login(envs["HF_TOKEN"])
         
   
             
