@@ -27,7 +27,7 @@ class LlamaCaptioner(Captioner):
         )
         
         try:
-            model.to(device)
+            self.model.to(device)
         except:
             print("Model was not successfully loaded to GPU")
         
