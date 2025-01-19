@@ -43,7 +43,7 @@ class LlamaCaptioner(Captioner):
         prompt = f"<|image|><|begin_of_text|>{self.prompt}"
         inputs = self.processor(image, prompt, return_tensors="pt").to(self.model.device)
 
-        output = self.model.generate(**inputs, max_new_tokens=75)
+        output = self.model.generate(**inputs, max_new_tokens=200)
         prompt_len = inputs.input_ids.shape[-1]
 
         generated_ids = output[:, prompt_len:]
