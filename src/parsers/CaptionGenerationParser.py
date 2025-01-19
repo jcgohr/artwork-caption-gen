@@ -45,6 +45,13 @@ class CaptionGenerationParser:
             help='Optional list of class names to filter the metadata',
             default=None
         )
+        
+        self.parser.add_argument(
+            '--multi',
+            action='store_true',
+            help='Enable multi-GPU distribution',
+            default=False
+        )
     
     def _validate_json_file(self, file_path: str) -> bool:
         """
