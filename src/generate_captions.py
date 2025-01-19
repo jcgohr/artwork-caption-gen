@@ -20,7 +20,10 @@ if __name__=="__main__":
     captions={}
     params=list(confs.values())
     captioners=list(confs.keys())
-
-    captions=multi_gpu_captioning(captioners,params,data)
+    if args.multi:
+        captions=multi_gpu_captioning(captioners,params,data)
+    else:
+        captions=sequential_captioning(captioners,params,data,None)
+        
     with open(output,"w",encoding="utf-8") as output_file:
         output_file.write(json.dumps(captions,indent=4,ensure_ascii=False))
