@@ -22,6 +22,15 @@ def split_dict(dictionary, n):
     return sections
 
 
+def merge_dicts(dict1, dict2):
+   for key, value in dict2.items():
+       if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):
+           dict1[key].update(value)
+       else:
+           dict1[key] = value
+   return dict1
+
+
 def load_huggingface_environment(env_path,vars=["HF_TOKEN","HF_HOME"])->dict[str,str]:
     envs={}
     load_dotenv(env_path)

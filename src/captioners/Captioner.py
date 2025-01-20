@@ -1,4 +1,4 @@
-from .utils import get_captioners,split_dict
+from .utils import get_captioners,split_dict,merge_dicts
 from multiprocessing import Pool
 from tqdm import tqdm
 import torch
@@ -33,7 +33,7 @@ def multi_gpu_captioning(captioners:list[str],params:list[list],data:dict):
     gpus=2
     if gpus==1:
         raise ValueError("Only 1 GPU detected, try Captioner.sequential_captioning instead")
-    
+    captions={}
     devices=[f"cuda:{i}" for i in range(gpus)]
     subsets = split_dict(data,gpus)
     for captioner,param in zip(captioners,params):
@@ -43,4 +43,6 @@ def multi_gpu_captioning(captioners:list[str],params:list[list],data:dict):
         map_params=[[a,b,c,d] for a,b,c,d in zip(captioner,param,subsets,devices)]
         with Pool(gpus) as pool:
             for result in pool.starmap(sequential_captioning,map_params):
-                print(result)
+                merge_dicts(captions,result)
+                
+    return captions
