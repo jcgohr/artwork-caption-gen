@@ -29,6 +29,7 @@ def multi_gpu_captioning(captioners:list[str],params:list[list],data:dict):
     if not torch.cuda.is_available():
         raise EnvironmentError("CUDA is not available")
     
+    torch.multiprocessing.set_start_method('spawn')
     # gpus = torch.cuda.device_count()
     gpus=2
     if gpus==1:
