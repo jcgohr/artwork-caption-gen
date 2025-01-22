@@ -1,0 +1,146 @@
+{
+    "7386": {
+        "title": "The Courtyard of a House in Delft",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/9/93/Pieter_de_Hooch_024.jpg",
+        "year": 1658,
+        "visual_sentences": [
+            "The painting portrays domestic architecture typical of de Hooch's middle period, with building and courtyard dominating people.",
+            "The scene is divided into two pieces.",
+            "To the left, an archway of brick and stone leads from a paved courtyard a passageway though a house, where a woman dressed in black and red stands looking away to the street beyond.",
+            "A stone tablet above the doorway was originally over the entrance of the Hieronymusdale Cloister in Delft.",
+            "When the cloister was suppressed this tablet was removed but can still be seen set into the wall of a garden behind the canal.",
+            "To the right is a vine growing over a wooden structure, with an open door through the brick wall to the far right, and a woman dressed in white and blue leading a child down steps to the courtyard.",
+            "The woman is carrying a dish in her other hand, and a bucket and a broom have been left in the courtyard.",
+            "The brickwork of the wall on the right is dilapidated compared to the house on the left; there is an interesting double perspective that differentiates the two halves that are divided by the right edge of the archway and building above.",
+            "Nature is making incursions to the well swept courtyard from the plant border on the right, including the shrub above the couple's head, and the vine obscuring the stone tablet."
+        ],
+        "contextual_sentences": [
+            "The Courtyard of a House in Delft is a 1658 oil painting by Pieter de Hooch, an example of Dutch Golden Age painting.",
+            "It is signed and dated to the left on the archway",
+            "\"P.D.H. / A 1658\".",
+            "It reads, in Dutch: \"Dit is in sint hieronimus daelle / wildt v tot pacientie en lydtsaemheijt begeeven / vvand wij muetten eerst daellen / willen wy worden verheeven 1614\" (in English: \"This is in Saint Jerome's dale /  please be patient and meek / for we must first descend / if we wish to be raised.\").",
+            "Similar figures can also be seen in contempraneous works including A Woman Drinking with Two Men (1658), and the woman in black and red can be seen in A Boy Bringing Bread (1663).",
+            "A similar composition with the same doorway can be seen in the Courtyard with an Arbour, also dated 1658, which sold at Christie's in London in December 1992 for £4.4 million.",
+            "There are some subtle effects that are at variance with the overall impression of harmony.",
+            "The painting was documented by Hofstede de Groot in 1908, and catalogued by John Smith (Sm. Suppl.",
+            "50) and de Groot (de G. 38).It remained in the Netherlands until 1825, when it was bought by Sir Robert Peel.",
+            "It was engraved by Paul Adolphe Rajon.",
+            "It was sold in 1871 by Peel's son Sir Robert Peel, 3rd Baronet, along with the rest of his father's art collection,  to the National Gallery, London, where it was No",
+            ". 835 in the 1906 catalogue.",
+            "The work was the subject of a poem by Derek Mahon."
+        ],
+        "split": "train"
+    },
+    "7873": {
+        "title": "A Lady Playing the Guitar",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Jan_Vermeer_van_Delft_013.jpg",
+        "year": 1680,
+        "visual_sentences": [
+            "A young lady with fresh red cheeks, wearing a white silk dress and a \nyellow jacket trimmed with ermine, sits on the left facing the spectator.",
+            "Her figure is seen at three-quarter length.",
+            "She looks with a smile at something above her to the left.",
+            "Behind her is a table with a blue cloth, on \nwhich are several books.",
+            "On the wall hangs a landscape.",
+            "The scene is \nlighted from a window with a dark blue curtain on the right."
+        ],
+        "contextual_sentences": [
+            "A Lady Playing the Guitar (after 1670s) is an oil on canvas painting by an unknown copyist after a work by the Dutch painter Johannes Vermeer.",
+            "It is an example of Dutch Golden Age painting and is part of the collection of the Philadelphia Museum of Art.",
+            "This painting by a follower of Vermeer was documented as authentic by Hofstede de Groot in 1908, who wrote; \"26.",
+            "A LADY PLAYING THE GUITAR.",
+            "B. 28. H. 31.",
+            "The \ncolours are delicately harmonised.",
+            "The paint is thin.",
+            "This picture \nbelongs to about the same period as the National Gallery picture (23).",
+            "Signed in full ; canvas, 19 1/2 inches by 16 1/2 inches.",
+            "Exhibited at the Royal Academy Winter Exhibition, 1892, No. 46.",
+            "The picture was, after Vermeer's death in 1676, in the possession of his \nwidow, Catharina Bolnes ; this picture, and \"The Love Letter\" in the Beit collection (35), were given as security for a debt of 617 florins.",
+            "Amsterdam, May 16, 1696,",
+            "No. 4 (70 florins).",
+            "Ph. van der Schley and D. du Pre, Amsterdam, December 22, 1817, \nNo. 62 (65 florins 5, Coclers).",
+            "In the possession of the dealer Gruyter, Amsterdam.",
+            "In the collections of J. H. C. Cremer, Brussels measuring, according to \nBürger, 21 inches by 18 inches; of Lord Iveagh ; of Henry Bischoffsheim, \nLondon.",
+            "In the possession of the dealer Gooden, London, 1896.",
+            "Now in the collection of John G. Johnson, Philadelphia.\"Years later it became apparent that Hofstede de Groot (and Johnson G. Johnson) had been tricked and this was a copy of the version in Kenwood House.",
+            "It is thanks to Johnson's deeply founded interest in art that all dubious attributions of paintings in his possession such as this one were allowed to remain in the collection, where it has become a quiet testament to the \"Vermeer craze\" at the turn of the 20th-century.",
+            "Even after seeing the Kenwood House version, Hofstede de Groot was convinced of this painting's superiority, which demonstrates the skill of the unknown copyist.",
+            "Needless to say the provenance records mentioned by Hofstede de Groot pertain to the Kenwood House version.",
+            "It is still unknown where the dealer \"Gooden\" acquired the painting."
+        ],
+        "split": "train"
+    },
+    "8021": {
+        "title": "The Sacrifice of Polyxena",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Charles_Le_Brun_-_The_Sacrifice_of_Polyxena.jpg",
+        "year": 1730,
+        "visual_sentences": [
+            "The Sacrifice of Polyxena is the title of several paintings by the Italian artist Giambattista Pittoni showing the Greeks sacrificing king Priam's daughter Polyxena on the tomb of Achilles, her lover, who had died at the hands of Priam's son Paris."
+        ],
+        "contextual_sentences": [],
+        "split": "train"
+    },
+    "9704": {
+        "title": "The Destruction of Pompeii and Herculaneum",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Destruction_of_Pompeii_and_Herculaneum.jpg",
+        "year": 1822,
+        "visual_sentences": [
+            "The Destruction of Pompeii and Herculaneum is a large 1822 painting by English artist John Martin."
+        ],
+        "contextual_sentences": [
+            "It follows the pattern set by his previous successful painting, Belshazzar's Feast, being another depiction of a dramatic scene from history on a grand scale.",
+            "The work was lost from sight in the Tate Gallery storerooms soon after it was damaged by the 1928 Thames flood but rediscovered there in 1973 and restored in 2011."
+        ],
+        "split": "train"
+    },
+    "12588": {
+        "title": "Portrait of a Man in a Top Hat",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/3/32/Vincent_van_Gogh_-_Orphan_Man_with_Top_Hat_%28F954%29.jpg",
+        "year": 1882,
+        "visual_sentences": [
+            "Portrait of a Man in a Top Hat is a drawing created in 1882 by Vincent van Gogh currently in Worcester Art Museum."
+        ],
+        "contextual_sentences": [
+            "It is one of Van Gogh's drawings depicting Adrianus Jacobus Zuyderland."
+        ],
+        "split": "train"
+    },
+    "14776": {
+        "title": "La danse, Bacchante",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/4/46/Jean_Auguste_Dominique_Ingres_-_The_Spring_-_Google_Art_Project_2.jpg",
+        "year": 1906,
+        "visual_sentences": [
+            "The work represents a nude woman in a composition that contains a wide variety of exotic geometrized elements.",
+            "Her body is depicted nude, seen from the front, with yellow and white highlights and turquoise reflections, the mythological reference serving as pretext for the nude."
+        ],
+        "contextual_sentences": [
+            "La danse (also known as Bacchante) is an oil painting created circa 1906 by the French artist and theorist Jean Metzinger (1883–1956).",
+            "Bacchante is a pre-Cubist or Proto-Cubist work executed in a highly personal Divisionist style during the height of the Fauve period.",
+            "Bacchante was painted in Paris at a time when Metzinger and Robert Delaunay painted portraits of one another, exhibiting together at the Salon d'Automne and the Berthe Weill gallery.",
+            "Bacchante was exhibited in Paris during the spring of 1907 at the Salon des Indépendants (No. 3460), along with Coucher de soleil and four other works by Metzinger.",
+            "The painting was purchased by the art historian and collector Wilhelm Uhde and formed part of his collection until it was sequestered by the French government just before World War I.",
+            "In 1921 the painting reappeared at the auction house Hôtel Drouot where it was presumably purchased by Kröller-Müller, and published in Catalogue of the paintings in the collection of Helene Kröller-Müller.",
+            "And as late as 1985 Bacchante was listed in Jean Metzinger",
+            "In Retrospect as belonging to the collection of the Kröller-Müller Museum.",
+            "In 2017, Bacchante appeared on the website of the Kröller-Müller Museum, dated c.1910.",
+            "La danse (Bacchante) is an oil painting on canvas with dimensions 73 x 54 cm (28.75 by 21.25 in).",
+            "Metzinger's bold use of color characteristic of his work between 1904 and 1907 is highly noticeable in Bacchante.",
+            "His brushstrokes are practically all the same size but their directions and colors vary giving rhythm to the overall work.",
+            "The depth of field is flattened; the foreground blending in with background components.",
+            "The subject matter is classical—reminiscent of Jean Auguste Dominique Ingres (an artist Metzinger greatly admired)—yet its treatment is everything but classical.",
+            "This early work in the Divisionist style represents a Bacchante (or maenads).",
+            "In Greek mythology, maenads were the female followers of Dionysus (Bacchus in the Roman pantheon), the most significant members of the Thiasus.",
+            "Their name literally translates as \"raving ones\".",
+            "Often the maenads were portrayed as inspired by Dionysus (also known as Bacchus) into a state of ecstatic frenzy, through a combination of dancing and drunken intoxication.",
+            "In this state they would lose all self-control, begin shouting excitedly, and engage in uncontrolled sexual behavior.",
+            "Many artists chose this subject over the centuries, probably due to these dramatic characteristics.",
+            "She is the primary subject of the work and is framed in an exotic setting that accentuates the arching curve of her back.",
+            "She has a \"deep voluptuousness,\" as in the works of Ingres (to use the term of Baudelaire), yet her timeless immobility makes her somehow chaste.",
+            "The scene is seemingly calm and luxurious simultaneously.",
+            "Metzinger's early quest for a 'total image' explains the lack of illusory depth, the profuse light, and the refusal to depict a marked difference between the foreground, background and the woman's frame.",
+            "Metzinger added a conspicuously tropical setting presumably under the influence of Paul Gauguin's Mahana no atua, Day of the Gods (1894) or Henri (lLe Douanier)",
+            "Rousseau's Le Rêve (two more painters the artist greatly admired).",
+            "Bacchante is already typical of Metzinger's style, with its sumptuous textures, sinuous harmony of line (for example the arching trees and foliage), and depiction of the serene attitude and chaste sensuality of the Bacchante's body—all enlisted in Metzinger's quest for absolute perfection."
+        ],
+        "split": "train"
+    }
+}
