@@ -97,8 +97,8 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
         # Continually append (n) to the save path until the image can be saved
         number=1
         while os.path.exists(save):
-            path,ext=save.split(".")
-            save=path+f"({number})"+"."+ext
+            path,ext=os.path.splitext(save)
+            save=path+f"({number})"+ext
             number+=1
             
         artpedia_dict[key]["file_path"]=save
