@@ -1,11 +1,37 @@
-from tqdm import tqdm
 from urllib.parse import unquote
+from tqdm import tqdm
+from PIL import Image 
 import urllib.request
 import zipfile 
 import shutil
+import math
 import json
 import os
 import re
+
+
+
+def normalize_image(img_path,max_pixels=1000):
+    """
+    Resizes to fit within a 1000x1000 frame
+    """
+    Image.MAX_IMAGE_PIXELS = 2000000000 
+    im = Image.open(img_path)
+    w,h = im.size
+    # If no resizing is required, just return
+    if w<=max_pixels and h<=max_pixels:
+        return
+     
+    max_pix_dim=w
+    if h>w:
+        max_pix_dim=h
+    
+    scaling_factor=math.ceil(max_pix_dim/max_pixels)
+    im=im.resize((w//scaling_factor,h//scaling_factor))
+    im.save(img_path)
+    im.close()
+    
+
 
 def clean_filename(filename):
     """Strips all characters that cannot be in a filename."""
@@ -15,6 +41,19 @@ ARTPEDIA_LINK="https://aimagelab.ing.unimore.it/imagelab/uploadedFiles/artpedia.
 ZIP="artpedia.zip"
 IMG_DIR="images/"
 
+
+def return_splits(artpedia_dict)->tuple[dict,dict,dict]:
+    splits={
+        "test":{},
+        "val":{},
+        "train":{},
+    }
+    
+    for key in artpedia_dict:
+        splits[artpedia_dict[key]["split"]][key]=artpedia_dict[key]
+    
+    return splits["test"],splits["val"],splits["train"]
+ 
 def download_artpedia_zip(output_dir:str,redownload=False):
 
     if os.path.exists(output_dir) and not redownload:
@@ -54,11 +93,19 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
     for key in tqdm(list(artpedia_dict.keys()),desc="Downloading images from wikimedia"):        
         url=artpedia_dict[key]["img_url"]
         save=os.path.join(img_directory,clean_filename(os.path.basename(unquote(url))))
-        if os.path.exists(save):
-            continue
+        
+        # Continually append (n) to the save path until the image can be saved
+        number=1
+        while os.path.exists(save):
+            path,ext=os.path.splitext(save)
+            save=path+f"({number})"+ext
+            number+=1
+            
         artpedia_dict[key]["file_path"]=save
         try:
             urllib.request.urlretrieve(url,save)
+            # Normalize the image
+            normalize_image(save)
         except urllib.request.HTTPError as e:
             # If the resource does not exist remove the entry in artpedia.json
             if e.code==404:
@@ -73,11 +120,21 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
     if write_stat_dict:
         with open(os.path.join(output_dir,"stats.json"),"w",encoding="utf-8") as stat_dict_file:
             stat_dict_file.write(json.dumps(stat_dict,indent=4))
+    
+    test,val,train=return_splits(artpedia_dict)
+
+    # Write test,val, and train sets with 404's removed and file paths
+    with open(os.path.join(output_dir,"artpedia_test.json"),"w",encoding="utf-8") as artpedia_file:
+            artpedia_file.write(json.dumps(test,indent=4,ensure_ascii=False))
+    
+    with open(os.path.join(output_dir,"artpedia_val.json"),"w",encoding="utf-8") as artpedia_file:
+            artpedia_file.write(json.dumps(val,indent=4,ensure_ascii=False))
+    
+    with open(os.path.join(output_dir,"artpedia_train.json"),"w",encoding="utf-8") as artpedia_file:
+            artpedia_file.write(json.dumps(train,indent=4,ensure_ascii=False))
             
-    # Write the update artpedia dictionary back to artpedia.json (we added the file paths and removed 404'd images)
-    with open(os.path.join(output_dir,"artpedia.json"),"w",encoding="utf-8") as artpedia_file:
-            artpedia_file.write(json.dumps(artpedia_dict,indent=4,ensure_ascii=False))
 
 def download_artpedia(output_dir:str,):
     download_artpedia_zip(output_dir)
     download_artpedia_images(output_dir)
+    

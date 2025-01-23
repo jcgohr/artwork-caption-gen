@@ -1,13 +1,24 @@
 from transformers import AutoProcessor, LlavaForConditionalGeneration
-from Captioner import Captioner
+from .Captioner import Captioner
 from PIL import Image
 import torch
 
 
+def parse_llava_output(output: str) -> str:
+    # Find the position of "ASSISTANT:"
+    assistant_pos = output.find("ASSISTANT:")
+    
+    # If found, return everything after "ASSISTANT:", otherwise return original string
+    if assistant_pos != -1:
+        # Add len("ASSISTANT:") to skip over the marker itself
+        return output[assistant_pos + len("ASSISTANT:"):].strip()
+    return output.strip()
+
 class LlavaCaptioner(Captioner):
-    def __init__(self,prompt,llava_model="llava-hf/llava-1.5-7b-hf"):
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    def __init__(self,prompt,llava_model,device=None):
+        self.device=device
+        if not device:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.model = LlavaForConditionalGeneration.from_pretrained(
             llava_model, 
@@ -34,7 +45,7 @@ class LlavaCaptioner(Captioner):
         inputs = self.processor(images=raw_image, text=self.prompt, return_tensors='pt').to(self.device, torch.float16)
 
         output = self.model.generate(**inputs, max_new_tokens=200, do_sample=False)
-        return self.processor.decode(output[0][2:], skip_special_tokens=True)
+        return parse_llava_output(self.processor.decode(output[0][2:], skip_special_tokens=True))
     
 if __name__=="__main__":
     llava=LlavaCaptioner("Caption this image")

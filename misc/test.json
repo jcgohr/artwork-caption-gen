@@ -1,0 +1,43 @@
+{
+    "2": {
+        "title": "Maestà (Cimabue)",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Cimabue_-_Maest%C3%A0_du_Louvre.jpg",
+        "year": 1280,
+        "visual_sentences": [
+            "It is also stylistically earlier to that work, being painted without pseudo-perspective, and having the angels around the Virgin simply placed one above the other, rather than being spatially arranged.",
+            "The throne is similar to the Maestà painted by Cimabue in the Basilica of San Francesco di Assisi (1288–1292)."
+        ],
+        "contextual_sentences": [
+            "The Maestà is a painting by the Italian artist   Cimabue, painted around 1280 and housed in Musée du Louvre of Paris, France.",
+            "The work is considered to be from around 1280, thus preceding the Santa Trinita Maestà.",
+            "This work established a new canon for the Madonna with Child theme, which was subsequently used by other painters, such as Duccio di Buoninsegna in his Rucellai Maestà."
+        ],
+        "split": "train",
+        "file_path": "artpedia/images/Cimabue_-_Maestà_du_Louvre.jpg"
+    },
+    "3": {
+        "title": "Rucellai Madonna",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/4/41/Duccio_-_Maest%C3%A0_-_Google_Art_Project.jpg",
+        "year": 1280,
+        "visual_sentences": [
+            "The painting depicts the Virgin and Child enthroned, surrounded by angels on a gold background.",
+            "The Madonna is large in scale, taking up the majority of the frame.",
+            "Her robe is finely modelled and her gold halo incised as if to illuminate her presence.",
+            "Six angels are seen holding the ornate throne, and are painted in shades of green, pink, lilac and blue."
+        ],
+        "contextual_sentences": [
+            "The Rucellai Madonna is a panel painting by the late medieval Italian painter Duccio di Buoninsegna from Siena.",
+            "Originally painted for the Societa di S Maria Virginis for Florence's Santa Maria Novella church, the painting now resides in the Uffizi Gallery in the same city.",
+            "The work, measuring 4.5 by 2.9 meters, may be the largest surviving painting of Italian 13th century art.",
+            "It is tempera on a five-pieced poplar panel; the frame is of the same wood.",
+            "The Virgin's robe was found during its 1989 cleaning to be azurite-based paint.",
+            "The Virgin is shown looking directly at the viewer, as the Christ Child is seen sitting on her lap, giving a blessing.",
+            "Duccio's use of gold represents the family's holiness and the unearthly realm they inhabit.",
+            "Their positions in front and behind the throne suggest they are either lifting it up, or bringing it down to earth.",
+            "The frame is decorated with thirty roundels containing portraits of Apostles, prophets, saints and patriarchs.",
+            "It is clear from the attention to detail that Duccio was highly concerned with idealism and beauty, rendering each figure softly, with delicate features and adoration."
+        ],
+        "split": "train",
+        "file_path": "artpedia/images/Duccio_-_Maestà_-_Google_Art_Project.jpg"
+    }
+}
