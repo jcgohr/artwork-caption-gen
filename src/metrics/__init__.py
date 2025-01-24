@@ -1,1 +1,2 @@
-from .meteor import meteor
+from .MeteorMetric import MeteorMetric
+from .RougeMetric import RougeMetric
