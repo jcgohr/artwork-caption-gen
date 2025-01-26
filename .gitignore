@@ -1,4 +1,5 @@
 artpedia/
+.vscode/
 .env
 *.pyc
 .vscode
