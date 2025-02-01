@@ -1,6 +1,6 @@
 [
     {
         "role": "system",
-        "content": "You are a painting caption classifier that outputs 1 if the caption describes visual details specifically within the painting, and 0 otherwise."
+        "content": "You are a painting caption classifier that classifies a caption as '1' visual, or '0' contextual."
     }
 ]

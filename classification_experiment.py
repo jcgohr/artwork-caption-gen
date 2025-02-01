@@ -15,7 +15,7 @@ from sklearn.metrics import f1_score, accuracy_score, confusion_matrix, Confusio
 # argparsing
 parser = argparse.ArgumentParser(description="Run LLM-based and optionally baseline classifiers on a dataset.")
 parser.add_argument("dataset_path", type=str, help="Path to the dataset to classify.")
-parser.add_argument("prompt_path", type=str, help="Path to the prompt to use for LLM classification.")
+parser.add_argument("prompt_path", type=str,  help="Path to the prompt to use for LLM classification.")
 parser.add_argument("afs_dataset_path", type=str, nargs="?", default=None, help="Path to the auto few-shot dataset (optional).")
 parser.add_argument("--run_baseline", action="store_true", help="Run baseline classifier along with LLM.")
 args = parser.parse_args()

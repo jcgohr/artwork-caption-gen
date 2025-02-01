@@ -4,7 +4,7 @@ sys.path.append(os.getcwd())
 from src.utils.auto_fewshot import AutoFewShot
 
 import torch
-import os
+import copy
 import json
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -41,13 +41,14 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 
 class classifier:
     """
-    Classify sentences as visual or contextual with an LM
+    Classify sentences as visual or contextual with an LLM
     """
     def __init__(self, model_id:str, prompt:str=None, prompt_path:str=None, afs_dataset_path:str=None, **kwargs):
         self.model_id = model_id
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, token=ACCESS_TOKEN)
         self.model = AutoModelForCausalLM.from_pretrained(model_id, token=ACCESS_TOKEN,**kwargs)
 
+        self.afs = None
         # load data for auto-few-shot
         if afs_dataset_path is not None:
             with open(afs_dataset_path, 'r', encoding='utf-8') as f:
@@ -58,7 +59,8 @@ class classifier:
                     for sentence in entry["visual_sentences"] + entry["contextual_sentences"]:
                         label = 1 if sen_count<len(entry["visual_sentences"]) else 0
                         afs_data.append((sentence, label))
-                self.afs_data = afs_data
+                        sen_count+=1
+                self.afs = AutoFewShot(afs_data)
 
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -132,19 +134,19 @@ class classifier:
         """
         Format a list of sentences into proper format for LLM inference
         """
-        if auto_fs:
-            afs = AutoFewShot(self.afs_data)
         prompts = []
         for i in range(len(sentences)):
+            curr_prompt = copy.deepcopy(self.prompt)
             if extra_instruct:
-                self.prompt[-1]["content"] = extra_instruct.format(sentence=sentences[i])
+                curr_prompt["content"] = extra_instruct.format(sentence=sentences[i])
             elif auto_fs:
-                most_similar = afs.most_similar(sentences[i], afs_top_n)
+                most_similar = self.afs.most_similar(sentences[i], afs_top_n)
                 for item in most_similar:
-                    self.prompt.append(self._create_chat_entry("user", item[0]))
-                    self.prompt.append(self._create_chat_entry("assistant", item[1]))
+                    curr_prompt.append(self._create_chat_entry("user", item[0]))
+                    curr_prompt.append(self._create_chat_entry("assistant", item[1]))
+                curr_prompt.append(self._create_chat_entry("user", sentences[i]))
             else:
-                self.prompt[-1]["content"] = sentences[i]
-            prompts.append(self.tokenizer.apply_chat_template(self.prompt, add_generation_prompt=True, tokenize=False))
+                curr_prompt[-1]["content"] = sentences[i]
+            prompts.append(self.tokenizer.apply_chat_template(curr_prompt, add_generation_prompt=True, tokenize=False))
 
         return prompts
