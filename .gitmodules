@@ -1,0 +1,3 @@
+[submodule "src/datasets/wga-scraping"]
+	path = src/datasets/wga-scraping
+	url = https://github.com/jcgohr/wga-scraping
