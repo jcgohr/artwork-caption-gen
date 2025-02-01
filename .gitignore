@@ -1,4 +1,7 @@
 artpedia/
+ft-details/
+results/
+captions/m_*
 .vscode/
 .env
 *.pyc

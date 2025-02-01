@@ -1,4 +1,6 @@
-from visual_contextual_classifier import classifier
+from src.visual_contextual_classifier import classifier
+
+import argparse
 import torch
 import json
 import sys
@@ -9,31 +11,48 @@ from VisualContextualClassifier import VisualContextualClassifier
 from tqdm import tqdm
 from sklearn.metrics import f1_score, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 
-RUN_BASELINE = False # True will also run baseline classifier, False is just LLM
 
-dataset_path = sys.argv[1]
-if not os.path.exists(dataset_path):
-   raise OSError(f"Dataset path {dataset_path} does not exist")
-classifier_8B = classifier("meta-llama/Llama-3.1-8B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
-baseline_classifier = VisualContextualClassifier() if RUN_BASELINE else None
+# argparsing
+parser = argparse.ArgumentParser(description="Run LLM-based and optionally baseline classifiers on a dataset.")
+parser.add_argument("dataset_path", type=str, help="Path to the dataset to classify.")
+parser.add_argument("prompt_path", type=str, help="Path to the prompt to use for LLM classification.")
+parser.add_argument("afs_dataset_path", type=str, nargs="?", default=None, help="Path to the auto few-shot dataset (optional).")
+parser.add_argument("--run_baseline", action="store_true", help="Run baseline classifier along with LLM.")
+args = parser.parse_args()
 
-with open(dataset_path, "r", encoding='utf-8') as f:
+if not os.path.exists(args.dataset_path):
+    raise OSError(f"Dataset path {args.dataset_path} does not exist")
+
+auto_fs = args.afs_dataset_path is not None
+afs_top_n = 2 if auto_fs else None
+
+if auto_fs and not os.path.exists(args.afs_dataset_path):
+    raise OSError(f"Dataset path {args.afs_dataset_path} does not exist")
+
+classifier_8B = classifier(
+    "meta-llama/Llama-3.1-8B-Instruct", 
+    prompt_path=args.prompt_path, 
+    afs_dataset_path=args.afs_dataset_path, 
+    torch_dtype=torch.bfloat16, 
+    device_map="auto"
+)
+baseline_classifier = VisualContextualClassifier() if args.run_baseline else None
+with open(args.dataset_path, "r", encoding='utf-8') as f:
     dataset = json.load(f)
-dataset = [entry for entry in dataset.values() if entry.get('split') == 'test']
+
 
 # generate true/pred
 y_true = []
 y_pred = []
 baseline_y_pred = []
-for data in tqdm(dataset, desc="Image captions classified"):
-    predictions = classifier_8B.classify(data["visual_sentences"] + data["contextual_sentences"])
+for data in tqdm(dataset.values(), desc="Image captions classified"):
+    predictions = classifier_8B.classify(data["visual_sentences"] + data["contextual_sentences"], auto_fs=auto_fs, afs_top_n=afs_top_n)
     y_true += [1] * len(data["visual_sentences"]) + [0] * len(data["contextual_sentences"])
     y_pred += predictions
-    if RUN_BASELINE:
+    if baseline_classifier:
         for sentence in data["visual_sentences"] + data["contextual_sentences"]:
             b_pred = baseline_classifier.predict(sentence)
             baseline_y_pred.append(1 if max(b_pred, key=b_pred.get) == "visual" else 0)
-
 
 output_path = os.path.join("results", "classification_experiment")
 
@@ -52,7 +71,7 @@ cm_display.plot(cmap=plt.cm.Greens)
 plt.savefig(os.path.join(output_path, "confusion_matrix.png"), dpi=300, bbox_inches="tight")
 
 # baseline eval
-if RUN_BASELINE:
+if baseline_classifier:
     f1_b = f1_score(y_true, baseline_y_pred)
     accuracy_b = accuracy_score(y_true, baseline_y_pred)
 
