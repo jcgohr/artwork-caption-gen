@@ -13,7 +13,7 @@ class CustomImageTextRetrievalDataset(Dataset):
         self.processor = processor
         self.samples = []
         
-        data=finetune_dataset_format(data_file,captions_file)
+        data=finetune_dataset_format(data_file,captions_file,None)
         # Add each caption with its corresponding image path
         for _, item in data.items():
             self.samples.append({
@@ -78,8 +78,8 @@ def train_blip(
     )
 
     # Create datasets
-    train_dataset = CustomImageTextRetrievalDataset(train_file, processor)
-    val_dataset = CustomImageTextRetrievalDataset(val_file, processor)
+    train_dataset = CustomImageTextRetrievalDataset(train_file,train_captions_file,caption_key, processor)
+    val_dataset = CustomImageTextRetrievalDataset(val_file,val_captions_file,caption_key,processor)
 
     # Define training arguments
     training_args = TrainingArguments(
