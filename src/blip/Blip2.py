@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import BlipProcessor, BlipForImageTextRetrieval
 from transformers import TrainingArguments, Trainer
-from src.utils.mutate import finetune_dataset_format
+from utils.mutate import finetune_dataset_format
 import json
 from PIL import Image
 import os
@@ -65,7 +65,7 @@ def train_blip(
     val_captions_file:str,
     caption_key:str,
     output_dir,
-    model_name:str="Salesforce/blip-image-text-retrieval",
+    model_name:str="Salesforce/blip-itm-base-coco",
     batch_size:int=16,
     num_epochs:int=3,
     learning_rate:float=2e-5

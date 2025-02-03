@@ -1,6 +1,6 @@
 
-from src.blip import train_blip
-from src.parsers import BlipArgumentParser
+from blip import train_blip
+from parsers import BlipArgumentParser
 
 parser = BlipArgumentParser()
 args = parser.parse_args()
