@@ -1,1 +1,2 @@
 from .CaptionGenerationParser import CaptionGenerationParser
+from .Blip2FinetuningParser import BlipArgumentParser
