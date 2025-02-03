@@ -63,6 +63,7 @@ def train_blip(
     val_file:str,
     train_captions_file:str,
     val_captions_file:str,
+    caption_key:str,
     output_dir,
     model_name:str="Salesforce/blip-image-text-retrieval",
     batch_size:int=16,

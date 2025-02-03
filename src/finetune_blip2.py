@@ -11,5 +11,6 @@ train_blip(
     val_file=args.val_file,
     train_captions_file=args.train_captions_file,
     val_captions_file=args.val_captions_file,
-    output_dir=args.output_dir
+    caption_key=args.caption_key,
+    output_dir=args.output_dir,
 )

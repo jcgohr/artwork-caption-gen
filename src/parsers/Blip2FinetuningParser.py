@@ -33,6 +33,12 @@ class BlipArgumentParser:
             help='Path to validation captions JSON file'
         )
         self.parser.add_argument(
+            '--caption_key',
+            type=str,
+            required=True,
+            help='Which captions to use e.g true, LlamaCaptioner, LlavaCaptioner'
+        )
+        self.parser.add_argument(
             '--output-dir',
             type=self._handle_output_dir,
             required=True,
