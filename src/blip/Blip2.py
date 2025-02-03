@@ -8,30 +8,16 @@ import os
 from glob import glob
 
 class CustomImageTextRetrievalDataset(Dataset):
-    def __init__(self, data_dir, processor):
-        """
-        Args:
-            data_dir (str): Directory containing JSON files and images
-            processor: BLIP processor for preprocessing
-        """
-        self.data_dir = data_dir
+    def __init__(self,data,captions,key,processor):
         self.processor = processor
         self.samples = []
         
-        # Load all JSON files in the directory
-        json_files = glob(os.path.join(data_dir, "*.json"))
-        for json_file in json_files:
-            with open(json_file, 'r') as f:
-                data = json.load(f)
-                # Extract file path from JSON filename
-                file_path = os.path.splitext(os.path.basename(json_file))[0]
-                
-                # Add each caption with its corresponding image path
-                for _, item in data.items():
-                    self.samples.append({
-                        'image_path': os.path.join(data_dir, file_path),
-                        'caption': item['caption']
-                    })
+        # Add each caption with its corresponding image path
+        for _, item in data.items():
+            self.samples.append({
+                'image_path': os.path.join(data_dir, file_path),
+                'caption': item['caption']
+            })
 
     def __len__(self):
         return len(self.samples)
