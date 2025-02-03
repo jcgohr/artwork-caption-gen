@@ -2,21 +2,23 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import BlipProcessor, BlipForImageTextRetrieval
 from transformers import TrainingArguments, Trainer
+from src.utils.mutate import finetune_dataset_format
 import json
 from PIL import Image
 import os
 from glob import glob
 
 class CustomImageTextRetrievalDataset(Dataset):
-    def __init__(self,data,captions,key,processor):
+    def __init__(self,data_file,captions_file,key,processor):
         self.processor = processor
         self.samples = []
         
+        data=finetune_dataset_format(data_file,captions_file)
         # Add each caption with its corresponding image path
         for _, item in data.items():
             self.samples.append({
-                'image_path': os.path.join(data_dir, file_path),
-                'caption': item['caption']
+                'image_path': item["file_path"],
+                'caption': item[key]
             })
 
     def __len__(self):
