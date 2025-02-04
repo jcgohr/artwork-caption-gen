@@ -3,5 +3,6 @@ ft-details/
 captions/m_*
 .vscode/
 .env
+.venv/
 *.pyc
 .vscode
