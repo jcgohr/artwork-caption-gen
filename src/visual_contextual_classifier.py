@@ -39,7 +39,7 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 #                 "Output '1' if the sentence describes visual (imagery) descriptions."
 #                 "Output '0' if the sentence gives contextual (history) descriptions.")
 
-class classifier:
+class Classifier:
     """
     Classify sentences as visual or contextual with an LLM
     """

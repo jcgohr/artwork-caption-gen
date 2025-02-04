@@ -86,12 +86,10 @@ def _load_test(test_split_path:str)->dict:
     return true_captions
 
 if __name__ == '__main__':
-
-    # qrel, run = search("submodules/longclip/checkpoints/longclip-L.pt", "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_test.json")
-    # run.save("results/retrieval_experiment/test.json")
-    # qrel.save("results/retrieval_experiment/test_qrel.json")
-    # results = evaluate(qrel, run, ["r@1, mrr"])
-    # with open("results/retrieval_experiment/results.json", "w") as f:
+    
+    qrel, run = search("ft-details/true-ft-checkpoints/True-ft3.pt", "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_test.json")
+    run.save("results/retrieval_experiment/true_run.json")
+    # qrel.save("results/retrieval_experiment/qrel.json")
+    # with open("results/retrieval_experiment/true_results.json", "w") as f:
     #     json.dump(results, f, indent=4)
-    eval("results/retrieval_experiment/test.json", "results/retrieval_experiment/test_qrel.json", "results/retrieval_experiment/results.json")
-    #finetune(val_split_path, train_split_path, caption_field, output_path, checkpoint_input_path)
+    eval("results/retrieval_experiment/true_run.json", "results/retrieval_experiment/qrel.json", "results/retrieval_experiment/true_results.json")
