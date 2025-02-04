@@ -31,9 +31,8 @@ def build_qrel(test_split_path:str, output_path:str=None)->Qrels:
     if output_path:
         qrel.save(output_path)
     return qrel
-
     
-def search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run:
+def longclip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run:
     """
     Use longclip checkpoint for text to image retrieval
 
@@ -57,7 +56,7 @@ def search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run
             image_embeddings[idx, :] = model.encode_image(preprocess(Image.open(sample["file_path"])).unsqueeze(0).to(device))
     logits_per_caption = caption_embeddings @ image_embeddings.T
 
-    # construct run/qrel
+    # construct run
     caption_ids = list(true_captions.keys()) # for index to id conversion
     run_dict = {}
     for idx, (id, sample) in enumerate(true_captions.items()):
@@ -70,6 +69,9 @@ def search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run
     if output_path:
         run.save(output_path)
     return run
+
+def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run:
+    return Run()
 
 def eval(run:str, qrel:str, output_path:str)->None:
     results = evaluate(qrel, run, ["recall@1", "mrr"])
@@ -104,5 +106,5 @@ if __name__ == '__main__':
         with open(args.qrel_path, "r", encoding="utf-8") as f:
             qrel = json.load(f)
     
-    run = search(args.checkpoint_path, args.test_split_path, args.save_run)
+    run = longclip_search(args.checkpoint_path, args.test_split_path, args.save_run)
     eval(run, qrel, args.results_path)

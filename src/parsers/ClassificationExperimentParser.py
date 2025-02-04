@@ -14,6 +14,7 @@ class ClassificationExperimentParser:
         self.parser.add_argument("afs_dataset_path", type=str, nargs="?", default=None, help="Path to the auto few-shot dataset (optional).")
         self.parser.add_argument("afs_top_n", type=int, nargs="?", default=None, help="Number of example sentences to use for AFS.")
         self.parser.add_argument("--run_baseline", action="store_true", help="Run baseline classifier along with LLM.")
+        self.parser.add_argument("--overwrite_output", action="store_true", help="If output_folder_name already exists, override the files in it.")
     
     def _validate_json_file(self, file_path: str) -> bool:
         """

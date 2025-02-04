@@ -44,6 +44,9 @@ output_path = os.path.join("results", "classification_experiment")
 full_output_path = os.path.join(output_path, args.output_folder_name)
 if not os.path.exists(full_output_path):
     os.mkdir(full_output_path)
+else:
+    if not args.overwrite_output:
+        raise FileExistsError(f"Directory {full_output_path} already exists. If you would like to overwrite it, use flag --overwrite_output.")
 
 # eval
 f1 = f1_score(y_true, y_pred)
@@ -64,10 +67,13 @@ if baseline_classifier:
     base_output_path = os.path.join(output_path, "baseline")
     if not os.path.exists(base_output_path):
         os.mkdir(base_output_path)
+    else:
+        if not args.overwrite_output:
+            raise FileExistsError(f"Directory {base_output_path} already exists. If you would like to overwrite it, use flag --overwrite_output.")
     f1_b = f1_score(y_true, baseline_y_pred)
     accuracy_b = accuracy_score(y_true, baseline_y_pred)
 
-    with open(os.path.join(output_path, "eval.csv"), "w", newline="") as f3:
+    with open(os.path.join(base_output_path, "eval.csv"), "w", newline="") as f3:
         writer = csv.writer(f3)
         writer.writerow(["Metric", "Value"])
         writer.writerow(["Accuracy", accuracy_b])
