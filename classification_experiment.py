@@ -1,4 +1,4 @@
-from src.visual_contextual_classifier import classifier
+from src.visual_contextual_classifier import Classifier
 from src.parsers.ClassificationExperimentParser import ClassificationExperimentParser
 
 import torch
@@ -15,7 +15,7 @@ from sklearn.metrics import f1_score, accuracy_score, confusion_matrix, Confusio
 parser = ClassificationExperimentParser()
 args = parser.parse_args()
 
-classifier_8B = classifier(
+classifier_8B = Classifier(
     "meta-llama/Llama-3.1-8B-Instruct", 
     prompt_path=args.prompt_path, 
     afs_dataset_path=args.afs_dataset_path, 
@@ -42,7 +42,8 @@ for data in tqdm(dataset.values(), desc="Image captions classified"):
 
 output_path = os.path.join("results", "classification_experiment")
 full_output_path = os.path.join(output_path, args.output_folder_name)
-os.mkdir(full_output_path)
+if not os.path.exists(full_output_path):
+    os.mkdir(full_output_path)
 
 # eval
 f1 = f1_score(y_true, y_pred)
@@ -61,7 +62,8 @@ plt.savefig(os.path.join(full_output_path, "confusion_matrix.png"), dpi=300, bbo
 # baseline eval
 if baseline_classifier:
     base_output_path = os.path.join(output_path, "baseline")
-    os.mkdir(base_output_path)
+    if not os.path.exists(base_output_path):
+        os.mkdir(base_output_path)
     f1_b = f1_score(y_true, baseline_y_pred)
     accuracy_b = accuracy_score(y_true, baseline_y_pred)
 
