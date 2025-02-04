@@ -1,5 +1,6 @@
 from submodules.longclip import model as longclip
 from src.finetuner import finetune
+from src.parsers.RetrievalExperimentParser import RetrievalExperimentParser
 
 import json
 import torch
@@ -20,8 +21,19 @@ from ranx import Qrels, Run, evaluate
 #     """
     
 #     finetune(val_split_path, train_split_path, caption_field, output_path, checkpoint_input_path)
+
+def build_qrel(test_split_path:str, output_path:str=None)->Qrels:
+    true_captions = _load_test(test_split_path)
+    qrel_dict = {}
+    for id in true_captions.keys():
+        qrel_dict[id] = {id: 1}
+    qrel = Qrels(qrel_dict, "t2i_retrieval")
+    if output_path:
+        qrel.save(output_path)
+    return qrel
+
     
-def search(checkpoint_path:str, test_split_path:dict)->Run:
+def search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run:
     """
     Use longclip checkpoint for text to image retrieval
 
@@ -31,7 +43,6 @@ def search(checkpoint_path:str, test_split_path:dict)->Run:
 
     Returns:
         Ranx run
-        Ranx qrel
     """
     true_captions = _load_test(test_split_path)
 
@@ -48,25 +59,22 @@ def search(checkpoint_path:str, test_split_path:dict)->Run:
 
     # construct run/qrel
     caption_ids = list(true_captions.keys()) # for index to id conversion
-    qrel_dict = {}
     run_dict = {}
     for idx, (id, sample) in enumerate(true_captions.items()):
         top_matching_indices = logits_per_caption[idx, :].argsort(dim=0, descending=True)[:100]
         values = logits_per_caption[idx, :][top_matching_indices]
         run_dict[id] = {}
-        qrel_dict[id] = {id: 1}
         for key_idx, value in zip(top_matching_indices, values):
             run_dict[id][caption_ids[key_idx]] = value.item()
-    return Qrels(qrel_dict, "t2i_retrieval"), Run(run_dict, "t2i_retrieval")
+    run = Run(run_dict, "t2i_retrieval")
+    if output_path:
+        run.save(output_path)
+    return run
 
-def eval(run_path:str, qrel_path:str, output_path:str)->None:
-    with open(run_path, "r", encoding='utf-8') as f:
-        run = json.load(f)
-    with open(qrel_path, "r", encoding='utf-8') as f2:
-        qrel = json.load(f2)
+def eval(run:str, qrel:str, output_path:str)->None:
     results = evaluate(qrel, run, ["recall@1", "mrr"])
-    with open(output_path, "w", encoding='utf-8') as out_f:
-        json.dump(results, out_f, indent=4)
+    with open(output_path, "w", encoding='utf-8') as f:
+        json.dump(results, f, indent=4)
 
 def _load_test(test_split_path:str)->dict:
     """
@@ -86,10 +94,15 @@ def _load_test(test_split_path:str)->dict:
     return true_captions
 
 if __name__ == '__main__':
+
+    parser = RetrievalExperimentParser()
+    args = parser.parse_args()
+
+    if args.save_qrel:
+        qrel = build_qrel(args.test_split_path, args.qrel_path)
+    else:
+        with open(args.qrel_path, "r", encoding="utf-8") as f:
+            qrel = json.load(f)
     
-    qrel, run = search("ft-details/true-ft-checkpoints/True-ft3.pt", "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_test.json")
-    run.save("results/retrieval_experiment/true_run.json")
-    # qrel.save("results/retrieval_experiment/qrel.json")
-    # with open("results/retrieval_experiment/true_results.json", "w") as f:
-    #     json.dump(results, f, indent=4)
-    eval("results/retrieval_experiment/true_run.json", "results/retrieval_experiment/qrel.json", "results/retrieval_experiment/true_results.json")
+    run = search(args.checkpoint_path, args.test_split_path, args.save_run)
+    eval(run, qrel, args.results_path)
