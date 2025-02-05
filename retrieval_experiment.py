@@ -97,7 +97,7 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
     model.eval()
     model = model.to(device='cpu')
     for idx, sample in enumerate(true_captions.values()):
-        logits_per_caption = model((_load_image_for_BLIP(sample["file_path"]), device), true_captions["caption"], match_head='itc')
+        logits_per_caption = model(_load_image_for_BLIP(sample["file_path"], device), true_captions["caption"], match_head='itc')
 
     # construct run
     caption_ids = list(true_captions.keys()) # for index to id conversion
