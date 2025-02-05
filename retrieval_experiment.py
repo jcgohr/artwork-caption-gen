@@ -1,11 +1,17 @@
 from submodules.longclip import model as longclip
+from submodules.BLIP.models.blip_itm import blip_itm
 from src.finetuner import finetune
 from src.parsers.RetrievalExperimentParser import RetrievalExperimentParser
 
 import json
 import torch
+import requests
 from PIL import Image
 from ranx import Qrels, Run, evaluate
+from torchvision import transforms
+from torchvision.transforms.functional import InterpolationMode
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # def get_trained(val_split_path:str, train_split_path:str, caption_field:str, output_path:str, checkpoint_input_path: str = 'submodules/longclip/checkpoints/'):
 #     """
@@ -39,6 +45,7 @@ def longclip_search(checkpoint_path:str, test_split_path:dict, output_path:str=N
     Args:
         checkpoint_path: Path to longclip checkpoint file
         test_split_path: Path to test split json file
+        output_path (optional): Save run to this path
 
     Returns:
         Ranx run
@@ -65,13 +72,46 @@ def longclip_search(checkpoint_path:str, test_split_path:dict, output_path:str=N
         run_dict[id] = {}
         for key_idx, value in zip(top_matching_indices, values):
             run_dict[id][caption_ids[key_idx]] = value.item()
-    run = Run(run_dict, "t2i_retrieval")
+    run = Run(run_dict, "longclip_retrieval")
     if output_path:
         run.save(output_path)
     return run
 
 def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run:
-    return Run()
+    """
+    Use BLIP checkpoint for text to image retrieval
+
+    Args:
+        checkpoint_path: Path to longclip checkpoint file
+        test_split_path: Path to test split json file
+        output_path (optional): Save run to this path
+
+    Returns:
+        Ranx run
+    """
+    true_captions = _load_test(test_split_path)
+
+    
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = blip_itm(pretrained=checkpoint_path, image_size=384, vit='base')
+    model.eval()
+    model = model.to(device='cpu')
+    for idx, sample in enumerate(true_captions.values()):
+        logits_per_caption = model((_load_image_for_BLIP(sample["file_path"]), device), true_captions["caption"], match_head='itc')
+
+    # construct run
+    caption_ids = list(true_captions.keys()) # for index to id conversion
+    run_dict = {}
+    for idx, (id, sample) in enumerate(true_captions.items()):
+        top_matching_indices = logits_per_caption[idx, :].argsort(dim=0, descending=True)[:100]
+        values = logits_per_caption[idx, :][top_matching_indices]
+        run_dict[id] = {}
+        for key_idx, value in zip(top_matching_indices, values):
+            run_dict[id][caption_ids[key_idx]] = value.item()
+    run = Run(run_dict, "BLIP_retrieval")
+    if output_path:
+        run.save(output_path)
+    return run
 
 def eval(run:str, qrel:str, output_path:str)->None:
     results = evaluate(qrel, run, ["recall@1", "mrr"])
@@ -95,6 +135,17 @@ def _load_test(test_split_path:str)->dict:
         true_captions[id] = {"caption": " ".join(sample["visual_sentences"]), "file_path": sample["file_path"]}
     return true_captions
 
+def _load_image_for_BLIP(img_url, device, image_size=384): 
+    raw_image = Image.open(requests.get(img_url, stream=True).raw).convert('RGB')   
+    
+    transform = transforms.Compose([
+        transforms.Resize((image_size,image_size),interpolation=InterpolationMode.BICUBIC),
+        transforms.ToTensor(),
+        transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
+        ]) 
+    image = transform(raw_image).unsqueeze(0).to(device)   
+    return image
+
 if __name__ == '__main__':
 
     parser = RetrievalExperimentParser()
@@ -106,5 +157,8 @@ if __name__ == '__main__':
         with open(args.qrel_path, "r", encoding="utf-8") as f:
             qrel = json.load(f)
     
-    run = longclip_search(args.checkpoint_path, args.test_split_path, args.save_run)
+    if args.using == "longclip":
+        run = longclip_search(args.checkpoint_path, args.test_split_path, args.save_run)
+    elif args.using == "blip":
+        run = blip_search(args.checkpoint_path, args.test_split_path, args.save_run)
     eval(run, qrel, args.results_path)

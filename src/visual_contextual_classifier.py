@@ -9,35 +9,6 @@ import json
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-# DEFAULT_PROMPT = [
-#     {"role": "system",
-#         "content": (
-#         "You are a painting caption classifier that outputs ONLY the number '1' or '0'. " 
-#         "Output '1' if the caption the user gives you contains mostly details of visual contents within the painting. "
-#         "Output '0' if the caption the user gives you contains mostly details of context that isn't describing visual details in the painting.")},
-
-#     {"role": "user", 
-#         "content": (
-#         "She's sitting on a seat covered with a rich drape acting as carpet too, and she has on her knees an open book, symbol of the happening Scriptures.")},
-
-#     {"role": "assistant",
-#         "content": (
-#         "1")},
-
-#     {"role": "user", 
-#         "content": (
-#         "Nor did it emphasise the significance of the manuscript or the rough manner in which Christ seems to energetically leaf through it, his play watched on by a near-indulgent Mary.")},
-
-#     {"role": "assistant",
-#         "content": (
-#         "0")},
-
-#     {"role": "user", 
-#         "content": "<insert sentence>"}
-# ]
-# EXTRA_INSTRUCT = ("Sentence: {sentence}"
-#                 "Output '1' if the sentence describes visual (imagery) descriptions."
-#                 "Output '0' if the sentence gives contextual (history) descriptions.")
 
 class Classifier:
     """

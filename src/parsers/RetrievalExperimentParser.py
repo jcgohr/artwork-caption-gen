@@ -10,6 +10,7 @@ class RetrievalExperimentParser:
     def _add_arguments(self):
         """Add the required and optional arguments to the parser."""
         self.parser.add_argument("checkpoint_path", type=str, help="Path to model checkpoints.")
+        self.parser.add_argument("using", type=str, help="Which model to use for retrieval (longclip or blip).")
         self.parser.add_argument("test_split_path", type=str, help="Path to the test split.")
         self.parser.add_argument("results_path", type=str, help="Desired .json output filename to save results in.")
         self.parser.add_argument("qrel_path", type=str, help="Path to pre-built qrel .json file, or location to save qrel if using flag --save_qrel.")
