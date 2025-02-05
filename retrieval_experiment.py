@@ -136,7 +136,7 @@ def _load_test(test_split_path:str)->dict:
     return true_captions
 
 def _load_image_for_BLIP(img_path, device, image_size=384): 
-    raw_image = Image.open(img_path).raw.convert('RGB')
+    raw_image = Image.open(img_path).raw().convert('RGB')
     
     transform = transforms.Compose([
         transforms.Resize((image_size,image_size),interpolation=InterpolationMode.BICUBIC),
