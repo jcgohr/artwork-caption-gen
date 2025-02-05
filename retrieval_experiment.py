@@ -93,10 +93,9 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
 
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(device)
     model = blip_itm(pretrained=checkpoint_path, image_size=384, vit='base')
     model.eval()
-    model = model.to(device='cpu')
+    model = model.to(device=device)
     for idx, sample in enumerate(true_captions.values()):
         logits_per_caption = model(_load_image_for_BLIP(sample["file_path"], device), sample["caption"], match_head='itc')
 
