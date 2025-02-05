@@ -90,24 +90,38 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
         Ranx run
     """
     true_captions = _load_test(test_split_path)
-
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = blip_itm(pretrained=checkpoint_path, image_size=384, vit='base')
     model.eval()
     model = model.to(device=device)
-    for idx, sample in enumerate(true_captions.values()):
-        logits_per_caption = model(_load_image_for_BLIP(sample["file_path"], device), sample["caption"], match_head='itc')
+
+    # Pre-load all images and store their embeddings
+    num_samples = len(true_captions)
+    all_images = []
+    for sample in true_captions.values():
+        img = _load_image_for_BLIP(sample["file_path"], device)
+        all_images.append(img)
+    
+    # Calculate similarity scores between each caption and all images
+    logits_per_caption = torch.zeros((num_samples, num_samples), device=device)
+    with torch.no_grad():
+        for idx, (_, sample) in enumerate(true_captions.items()):
+            for img_idx, img in enumerate(all_images):
+                # Calculate similarity score between current caption and each image
+                logits = model(img, sample["caption"], match_head='itc')
+                logits_per_caption[idx, img_idx] = logits[0]
 
     # construct run
     caption_ids = list(true_captions.keys()) # for index to id conversion
     run_dict = {}
-    for idx, (id, sample) in enumerate(true_captions.items()):
+    for idx, (id, _) in enumerate(true_captions.items()):
         top_matching_indices = logits_per_caption[idx, :].argsort(dim=0, descending=True)[:100]
         values = logits_per_caption[idx, :][top_matching_indices]
         run_dict[id] = {}
         for key_idx, value in zip(top_matching_indices, values):
             run_dict[id][caption_ids[key_idx]] = value.item()
+    
     run = Run(run_dict, "BLIP_retrieval")
     if output_path:
         run.save(output_path)
