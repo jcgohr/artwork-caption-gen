@@ -135,8 +135,8 @@ def _load_test(test_split_path:str)->dict:
         true_captions[id] = {"caption": " ".join(sample["visual_sentences"]), "file_path": sample["file_path"]}
     return true_captions
 
-def _load_image_for_BLIP(img_url, device, image_size=384): 
-    raw_image = Image.open(requests.get(img_url, stream=True).raw).convert('RGB')   
+def _load_image_for_BLIP(img_path, device, image_size=384): 
+    raw_image = Image.open(img_path).raw.convert('RGB')
     
     transform = transforms.Compose([
         transforms.Resize((image_size,image_size),interpolation=InterpolationMode.BICUBIC),
