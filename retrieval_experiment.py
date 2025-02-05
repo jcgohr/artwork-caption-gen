@@ -93,6 +93,7 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
 
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(device)
     model = blip_itm(pretrained=checkpoint_path, image_size=384, vit='base')
     model.eval()
     model = model.to(device='cpu')
