@@ -1,6 +1,6 @@
-def BleuMetric():
-    def __init__(self):
-        pass
-    
+from bleuscore import evaluate
+
+def BleuMetric():    
     def __call__(self,candidate,reference):
-        pass
+        results = evaluate(predictions=candidate, references=reference)
+        return results
