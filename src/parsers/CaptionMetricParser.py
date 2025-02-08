@@ -69,10 +69,10 @@ class CaptionMetricParser:
         self._validate_file(args.data)
         
         # Load the JSON files
-        with open(args.caps, 'r') as caps_file:
+        with open(args.caps, 'r',encoding='utf-8') as caps_file:
             self.captions = json.load(caps_file)
         
-        with open(args.data, 'r') as data_file:
+        with open(args.data, 'r',encoding='utf-8') as data_file:
             self.data = json.load(data_file)
 
 
