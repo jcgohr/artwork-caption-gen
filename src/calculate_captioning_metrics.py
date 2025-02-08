@@ -4,5 +4,5 @@ metrics=[
     BleuMetric(),
     MeteorMetric(),
     RougeMetric(),
-    BERTScoreMetric()
+    BERTScoreMetric("distilbert-base-uncased")
 ]

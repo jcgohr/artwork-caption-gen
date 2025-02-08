@@ -1,6 +1,6 @@
-from bleuscore import evaluate
+from bleuscore import compute
 
 def BleuMetric():    
     def __call__(self,candidate,reference):
-        results = evaluate(predictions=candidate, references=reference)
+        results = compute(predictions=candidate, references=reference)
         return results
