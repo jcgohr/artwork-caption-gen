@@ -1,0 +1,22 @@
+[
+    {
+        "role": "system",
+        "content": "You are a painting caption classifier that outputs 1 if the caption describes visual details specifically within the painting, and 0 otherwise."
+    },
+    {
+        "role": "user",
+        "content": "Gabriel holds an olive branch in his hand, a traditional symbol of peace, while pointing at the Holy Ghost's dove with the other."
+    },
+    {
+        "role": "assistant",
+        "content": "1"
+    },
+    {
+        "role": "user",
+        "content": "Considered Martini's masterwork and one of the most outstanding works of Gothic painting, the work was originally painted for a side altar in the Siena Cathedral."
+    },
+    {
+        "role": "assistant",
+        "content": "0"
+    }
+]
