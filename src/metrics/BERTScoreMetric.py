@@ -6,4 +6,8 @@ class BERTScoreMetric():
     
     def __call__(self,candidate,reference):
         P, R, F1 = self.scorer.score(candidate, reference)
-        return P,R,F1
+        return [p.item() for p in P],[r.item() for r in R],[f1.item for f1 in F1]
+    
+if __name__=="__main__":
+    scr=BERTScoreMetric("distilbert-base-uncased")
+    print(scr(["test test test test","test test test test test12345"],["test test test test","test test test test test"]))
