@@ -25,3 +25,18 @@ def parse_metric_results(scores, caption_keys, results, metric_keys):
             scores[caption_key][metric_keys[0]] = results[caption_idx]
     
     return scores
+
+def write_scores_to_tsv(scores_dict, output_path):
+    # Get all metric keys from the first entry
+    first_key = next(iter(scores_dict))
+    metric_keys = list(scores_dict[first_key].keys())
+    
+    with open(output_path, 'w') as f:
+        # Write header
+        header = ['id'] + metric_keys
+        f.write('\t'.join(header) + '\n')
+        
+        # Write data rows
+        for id_key, metrics in scores_dict.items():
+            row = [str(id_key)] + [str(metrics[key]) for key in metric_keys]
+            f.write('\t'.join(row) + '\n')
