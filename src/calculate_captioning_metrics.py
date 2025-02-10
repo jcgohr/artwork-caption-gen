@@ -2,7 +2,7 @@ from metrics import BleuMetric,MeteorMetric,RougeMetric,BERTScoreMetric
 from parsers import CaptionMetricParser
 
 parser=CaptionMetricParser()
-args=parser.parse_args()
+parser.parse_args()
 
 scores={}
 metrics=[
@@ -17,4 +17,4 @@ metrics=[
 ]
 
 for metric,keys in metrics:
-    print(keys)
+    results=metric([captions[parser.key] for captions in list(parser.data.values())],[captions["True"] for captions in list(parser.data.values())])
