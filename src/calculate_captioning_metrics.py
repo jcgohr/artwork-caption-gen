@@ -15,3 +15,6 @@ metrics=[
     # Returns p's, r's, f1's
     (BERTScoreMetric("distilbert-base-uncased"),["distilbert-base-uncased-bertscore-p","distilbert-base-uncased-bertscore-r","distilbert-base-uncased-bertscore-f1"]),
 ]
+
+for metric,keys in metrics:
+    print(keys)

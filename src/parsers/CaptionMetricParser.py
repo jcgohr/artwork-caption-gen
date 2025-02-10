@@ -1,15 +1,16 @@
 import argparse
-import json
 from pathlib import Path
-from typing import Dict, Any
+import sys
+from utils.mutate import finetune_dataset_format
+
 
 class CaptionMetricParser:
     """
     A parser for handling caption files.
     
     This class provides functionality to parse command line arguments
-    for caption and image-caption data JSON files, with built-in validation.
-    The loaded data is stored in the captions and data attributes.
+    for caption and metadata files, processing them into a consistent
+    format for finetuning.
     """
     
     def __init__(self):
@@ -18,8 +19,9 @@ class CaptionMetricParser:
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
         self._setup_arguments()
-        self.captions: Dict[str, Any] = {}
-        self.data: Dict[str, Any] = {}
+        self.key: str = ""
+        self.output_path: str = ""
+        self.data = None
     
     def _setup_arguments(self) -> None:
         """Set up the command line arguments."""
@@ -27,53 +29,100 @@ class CaptionMetricParser:
             "-c", "--caps",
             type=str,
             required=True,
-            help="Path to the captions JSON file"
+            help="Path to the generated captions JSON file"
         )
         self.parser.add_argument(
             "-d", "--data",
             type=str,
             required=True,
-            help="Path to the image and caption data JSON file"
+            help="Path to the metadata JSON file"
+        )
+        self.parser.add_argument(
+            "-k", "--key",
+            type=str,
+            required=True,
+            help="Key string to use"
+        )
+        self.parser.add_argument(
+            "-o", "--out",
+            type=str,
+            required=True,
+            help="Output filepath"
         )
     
-    def _validate_file(self, file_path: str) -> None:
+    def _validate_input_file(self, file_path: str) -> None:
         """
-        Validate that the file exists and is a JSON file.
+        Validate input file existence.
         
         Args:
-            file_path: Path to the file to validate
+            file_path: Path to the input file to validate
             
         Raises:
-            FileNotFoundError: If the file doesn't exist
-            ValueError: If the file is not a JSON file
+            FileNotFoundError: If file doesn't exist
         """
-        path = Path(file_path)
-        if not path.exists():
+        if not Path(file_path).exists():
             raise FileNotFoundError(f"File not found: {file_path}")
-        if path.suffix.lower() != '.json':
-            raise ValueError(f"File must be a JSON file: {file_path}")
+    
+    def _ensure_output_directory(self, file_path: str) -> None:
+        """
+        Ensure the output directory exists, creating it if necessary.
+        
+        Args:
+            file_path: Path to the output file
+        """
+        output_dir = Path(file_path).parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+    
+    def _check_output_file(self, file_path: str) -> bool:
+        """
+        Check if output file exists and prompt user for overwrite permission.
+        
+        Args:
+            file_path: Path to check
+            
+        Returns:
+            bool: True if file doesn't exist or user agrees to overwrite
+        """
+        if Path(file_path).exists():
+            while True:
+                response = input(f"File {file_path} already exists. Overwrite? (y/n): ").lower()
+                if response in ('y', 'yes'):
+                    return True
+                if response in ('n', 'no'):
+                    print("Operation cancelled by user")
+                    return False
+                print("Please answer 'y' or 'n'")
+        return True
     
     def parse_args(self) -> None:
         """
-        Parse and validate the command line arguments, then load the JSON files.
+        Parse and validate the command line arguments, then process the files.
         
         Raises:
-            FileNotFoundError: If either file doesn't exist
-            ValueError: If either file is not a JSON file
-            JSONDecodeError: If either file contains invalid JSON
+            FileNotFoundError: If input files don't exist
+            SystemExit: If user chooses not to overwrite existing output file
         """
         args = self.parser.parse_args()
         
-        # Validate both files
-        self._validate_file(args.caps)
-        self._validate_file(args.data)
+        # Validate input files exist
+        self._validate_input_file(args.caps)
+        self._validate_input_file(args.data)
         
-        # Load the JSON files
-        with open(args.caps, 'r',encoding='utf-8') as caps_file:
-            self.captions = json.load(caps_file)
+        # Create output directory if needed and check for file overwrite
+        self._ensure_output_directory(args.out)
+        if not self._check_output_file(args.out):
+            sys.exit(0)
         
-        with open(args.data, 'r',encoding='utf-8') as data_file:
-            self.data = json.load(data_file)
+        # Store arguments
+        self.key = args.key
+        self.output_path = args.out
+        
+        # Process the input files using finetune_dataset_format
+        self.data = finetune_dataset_format(
+            metadata_path=args.data,
+            generated_cap_path=args.caps,
+            output_path=None
+        )
 
 
 # Example usage
@@ -81,8 +130,9 @@ if __name__ == "__main__":
     try:
         parser = CaptionMetricParser()
         parser.parse_args()
-        print(f"Successfully loaded both JSON files")
-        print(f"Captions data keys: {list(parser.captions.keys())}")
-        print(f"Image and caption data keys: {list(parser.data.keys())}")
+        print(f"Successfully processed input files")
+        print(f"Using key: {parser.key}")
+        print(f"Output will be written to: {parser.output_path}")
     except Exception as e:
         print(f"Error: {str(e)}")
+        sys.exit(1)
