@@ -13,5 +13,5 @@ metrics=[
     # Returns averages of averages (p, r, f1)   
     (RougeMetric(),[["rouge-1-p","rouge-1-r","rouge-1-f1"],["rouge-2-p","rouge-2-r","rouge-2-f1"],["rouge-l-p","rouge-l-r","rouge-l-f1"]]),
     # Returns p's, r's, f1's
-    (BERTScoreMetric("distilbert-base-uncased"),["distilbert-base-uncased-bertscore"]),
+    (BERTScoreMetric("distilbert-base-uncased"),["distilbert-base-uncased-bertscore-p","distilbert-base-uncased-bertscore-r","distilbert-base-uncased-bertscore-f1"]),
 ]
