@@ -1,4 +1,4 @@
-from datasets import normalize_image
+from custom_datasets import normalize_image
 import sys
 import os
 
