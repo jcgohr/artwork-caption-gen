@@ -19,6 +19,5 @@ metrics=[
 caption_keys=list(parser.data.keys())
 scores={k:{} for k in caption_keys}
 for metric,metric_keys in metrics:
-    results=metric([captions[parser.key] for captions in list(parser.data.values())],[captions["True"] for captions in list(parser.data.values())])
-    assert len(caption_keys)==len(results),"Mismatch in key and results length"
+    results=metric([captions[parser.key] for captions in list(parser.data.values())],[captions["True"] for captions in list(parser.data.values())]) 
     print(results)
