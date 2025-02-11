@@ -1,1 +1,2 @@
 from .CaptionGenerationParser import CaptionGenerationParser
+from .CaptionMetricParser import CaptionMetricParser

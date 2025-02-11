@@ -16,7 +16,7 @@ def finetune_dataset_format(metadata_path:str, generated_cap_path:str, output_pa
         output_path: Location to write new dict to
     """
 
-    if os.path.exists(output_path):
+    if output_path and os.path.exists(output_path):
         raise FileExistsError
 
     with open(metadata_path, "r", encoding='utf-8') as f:

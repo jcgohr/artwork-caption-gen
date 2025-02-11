@@ -1,4 +1,4 @@
-from datasets.artpedia import download_artpedia_images,download_artpedia_zip
+from custom_datasets.artpedia import download_artpedia_images,download_artpedia_zip
 import sys
 
 if __name__=="__main__":
