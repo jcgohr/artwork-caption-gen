@@ -92,14 +92,8 @@ def download_artpedia_images(output_dir:str,write_stat_dict=False):
     
     for key in tqdm(list(artpedia_dict.keys()),desc="Downloading images from wikimedia"):        
         url=artpedia_dict[key]["img_url"]
-        save=os.path.join(img_directory,clean_filename(os.path.basename(unquote(url))))
-        
-        # Continually append (n) to the save path until the image can be saved
-        number=1
-        while os.path.exists(save):
-            path,ext=os.path.splitext(save)
-            save=path+f"({number})"+ext
-            number+=1
+        path,ext=os.path.splitext(os.path.basename(unquote(url)))
+        save=os.path.join(img_directory,key+ext)
             
         artpedia_dict[key]["file_path"]=save
         try:
