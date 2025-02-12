@@ -26,17 +26,36 @@ def parse_metric_results(scores, caption_keys, results, metric_keys):
     
     return scores
 
-def write_scores_to_tsv(scores_dict, output_path):
+def write_scores_to_tsv(scores_dict, output_path, captions, caption_key):
+    """
+    Write evaluation scores and corresponding captions to a TSV file.
+    
+    Args:
+        scores_dict: Dictionary of metric scores for each example
+        output_path: Path to write the TSV file
+        captions: Dictionary containing captions for each example
+        caption_key: Key to identify the generated caption in the captions dict
+    """
     # Get all metric keys from the first entry
     first_key = next(iter(scores_dict))
     metric_keys = list(scores_dict[first_key].keys())
     
-    with open(output_path, 'w') as f:
-        # Write header
-        header = ['id'] + metric_keys
+    with open(output_path, "w", encoding="utf-8") as f:
+        # Write header with additional caption columns
+        header = ['id'] + ['True_caption', f'{caption_key}_caption'] + metric_keys
         f.write('\t'.join(header) + '\n')
         
         # Write data rows
         for id_key, metrics in scores_dict.items():
-            row = [str(id_key)] + [str(metrics[key]) for key in metric_keys]
+            # Get captions for this example and remove newlines
+            true_caption = captions[id_key]["True"].replace('\n', ' ').replace('\r', ' ')
+            generated_caption = captions[id_key][caption_key].replace('\n', ' ').replace('\r', ' ')
+            
+            # Combine all fields for the row
+            row = [
+                str(id_key),
+                true_caption,
+                generated_caption
+            ] + [str(metrics[key]) for key in metric_keys]
+            
             f.write('\t'.join(row) + '\n')

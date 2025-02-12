@@ -23,4 +23,4 @@ for metric,metric_keys in metrics:
     results=metric([captions[parser.key] for captions in list(parser.data.values())],[captions["True"] for captions in list(parser.data.values())]) 
     scores = parse_metric_results(scores, caption_keys, results, metric_keys)
     
-write_scores_to_tsv(scores,parser.output_path)
+write_scores_to_tsv(scores,parser.output_path,parser.data,parser.key)
