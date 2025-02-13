@@ -45,19 +45,7 @@ def longclip_search(checkpoint_path:str, test_split_path:dict, output_path:str=N
             image_embeddings[idx, :] = model.encode_image(preprocess(Image.open(sample["file_path"])).unsqueeze(0).to(device))
     logits_per_caption = caption_embeddings @ image_embeddings.T
 
-    # construct run
-    caption_ids = list(true_captions.keys()) # for index to id conversion
-    run_dict = {}
-    for idx, (id, _) in enumerate(true_captions.items()):
-        top_matching_indices = logits_per_caption[idx, :].argsort(dim=0, descending=True)[:100]
-        values = logits_per_caption[idx, :][top_matching_indices]
-        run_dict[id] = {}
-        for key_idx, value in zip(top_matching_indices, values):
-            run_dict[id][caption_ids[key_idx]] = value.item()
-    run = Run(run_dict, "longclip_retrieval")
-    if output_path:
-        run.save(output_path)
-    return run
+    return construct_run(true_captions, logits_per_caption, "LongCLIP_retrieval", output_path)
 
 def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)->Run:
     """
