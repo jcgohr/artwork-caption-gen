@@ -1,7 +1,11 @@
 import argparse
 from pathlib import Path
 import sys
-from utils.mutate import finetune_dataset_format
+try:
+    from utils.mutate import finetune_dataset_format
+except:
+    from src.utils.mutate import finetune_dataset_format
+    
 
 
 class CaptionMetricParser:
