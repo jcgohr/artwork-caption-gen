@@ -98,7 +98,7 @@ class finetune:
     """
     Finetune longclip checkpoints
     """
-    def __init__(self, val_path:str, train_path:str, caption_field_name:str, checkpoint_output_path:str, epochs=6, checkpoint_input_path:str='submodules/longclip/checkpoints/longclip-L.pt', **kwargs):
+    def __init__(self, val_path:str, train_path:str, caption_field_name:str, checkpoint_output_path:str, epochs:int=6, save_min_loss:bool=True, checkpoint_input_path:str='submodules/longclip/checkpoints/longclip-L.pt', **kwargs):
         """
         Args:
             val_path: Path to validation set
@@ -106,11 +106,13 @@ class finetune:
             caption_field_name: Name of caption field within metadata file
             checkpoint_output_path: Desired path to output finetuned checkpoint files
             checkpoint_input_path: Path of checkpoints to be finetuned
+            save_min_loss: Only save checkpoints when the validation loss is lower than all previous checkpoints
         """
         self.caption_field_name = caption_field_name
         self.checkpoint_input_path = checkpoint_input_path
         self.checkpoint_output_path = checkpoint_output_path
         self.epochs = epochs
+        self.save_min_loss = save_min_loss
 
         # Save training plots with matplotlib to:
         self.plots_folder = kwargs.get('plots_folder', 'ft-plots')
@@ -149,6 +151,7 @@ class finetune:
         optimizer = AdaBelief(self.model.parameters(), lr=learning_rate, eps=1e-16, betas=(0.9, 0.995), weight_decay=1e-3, weight_decouple=False, rectify=True, print_change_log = False)
         scheduler = OneCycleLR(optimizer, max_lr=learning_rate, total_steps=total_steps, pct_start=0.1, anneal_strategy='linear')
         
+        min_val_loss = 0 # save only min val loss checkpoints if save_min_loss arg == True
         model = self.model.float()
         print(f"Precision: {model.dtype}")
         print(f'Total batches: {len(train_dataloader)} @ Batch Size: {batch_size}')
@@ -178,7 +181,6 @@ class finetune:
                         gradient_norms.setdefault(name, []).append(grad_norm)
                 
                 # OPTIONAL DEBUG
-                # vanishing in positional_embedding_res and exploding in visual.conv1.weight seems to frequently happen with AdamW
                 # use this line to debug (and be spammed with red messages about exploding and vanishing gradients):
                 # monitor_gradient_norms(gradient_norms)
                 
@@ -196,6 +198,7 @@ class finetune:
             # Validation
             model.eval()    
             print("Running Validation...")
+            min_flag = False
             val_total_loss = 0
             with torch.no_grad():
                 for images, texts in val_dataloader:
@@ -206,6 +209,13 @@ class finetune:
 
             avg_val_loss = val_total_loss / len(val_dataloader)
             validation_losses.append(avg_val_loss)
+
+            if epoch==0:
+                min_val_loss = avg_val_loss
+            else:
+                if avg_val_loss <= min_val_loss:
+                    min_val_loss = avg_val_loss
+                    min_flag = True
             
             if epoch >= 1:
                 # Plot losses
@@ -230,7 +240,7 @@ class finetune:
                 f.write("============================================================\n")
 
             # Save model every <> epochs + save final model
-            if (epoch + 1) % 1 == 0 or epoch == EPOCHS - 1:
+            if (self.save_min_loss == False or self.save_min_loss == True and min_flag == True) and (epoch + 1) % 1 == 0 or epoch == EPOCHS - 1:
                 output_path = f"{self.ft_checkpoints_folder}/{self.checkpoint_output_path}{epoch+1}.pt"
                 torch.save(model.state_dict(), output_path)      
                 print(Fore.GREEN + f"Checkpoint saved at: {output_path}" + Style.RESET_ALL)
@@ -315,25 +325,23 @@ if __name__ == '__main__':
     # train_caption_path = "captions/train_captions.json"
     # val_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_val.json"
     # train_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_train.json"
-    # caption_field = "True"
-    # checkpoint_output_name = "true-ft"
     # mutate.finetune_dataset_format(val_split_path, val_caption_path, "captions/m_val_captions.json")
     # mutate.finetune_dataset_format(train_split_path, train_caption_path, "captions/m_train_captions.json")
     val_split_path = "captions/m_val_captions.json"
     train_split_path = "captions/m_train_captions.json"
 
-    finetuner1 = finetune(val_split_path, train_split_path, "LlamaCaptioner", "Llama-ft",
-                        plots_folder="llama-ft-plots", ft_checkpoints_folder="llama-ft-checkpoints",
-                        text_logs_folder="llama-ft-logs")
-    finetuner1.trainloop()
+    # finetuner1 = finetune(val_split_path, train_split_path, "LlamaCaptioner", "Llama-ft",
+    #                     plots_folder="llama-ft-plots", ft_checkpoints_folder="llama-ft-checkpoints",
+    #                     text_logs_folder="llama-ft-logs")
+    # finetuner1.trainloop()
 
-    del finetuner1
-    gc.collect()
-    torch.cuda.empty_cache()
+    # del finetuner1
+    # gc.collect()
+    # torch.cuda.empty_cache()
 
     finetuner2 = finetune(val_split_path, train_split_path, "LlavaCaptioner", "Llava-ft",
                         plots_folder="llava-ft-plots", ft_checkpoints_folder="llava-ft-checkpoints",
-                        text_logs_folder="llava-ft-logs")
+                        text_logs_folder="llava-ft-logs", epochs=25)
     finetuner2.trainloop()
     del finetuner2
     gc.collect()
@@ -341,7 +349,7 @@ if __name__ == '__main__':
 
     finetuner3 = finetune(val_split_path, train_split_path, "True", "True-ft",
                         plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints",
-                        text_logs_folder="true-ft-logs")
+                        text_logs_folder="true-ft-logs", epochs=25)
     finetuner3.trainloop()
     del finetuner3
     gc.collect()
