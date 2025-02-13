@@ -110,7 +110,7 @@ def construct_run(true_captions:list, logits_per_caption:list, run_name:str, out
         run.save(output_path)
     return run
 
-def eval(run:Run, qrel:str, output_path:str, metrics:list, return_mean:bool=True)->None:
+def eval(run:Run, qrel:str, output_path:str, metrics:list, return_mean:bool)->None:
     """
     If return_mean == True, output_path must be a .json. If false, output_path must be a .csv
     """
@@ -169,4 +169,4 @@ if __name__ == '__main__':
         run = longclip_search(args.checkpoint_path, args.test_split_path, args.save_run)
     elif args.using == "blip":
         run = blip_search(args.checkpoint_path, args.test_split_path, args.save_run)
-    eval(run, qrel, args.results_path, ["precision@1", "mrr"])
+    eval(run, qrel, args.results_path, ["precision@1", "mrr"], return_mean=not args.eval_queries)

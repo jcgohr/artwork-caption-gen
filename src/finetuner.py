@@ -341,16 +341,16 @@ if __name__ == '__main__':
 
     finetuner2 = finetune(val_split_path, train_split_path, "LlavaCaptioner", "Llava-ft",
                         plots_folder="llava-ft-plots", ft_checkpoints_folder="llava-ft-checkpoints",
-                        text_logs_folder="llava-ft-logs", epochs=25)
+                        text_logs_folder="llava-ft-logs", epochs=6)
     finetuner2.trainloop()
     del finetuner2
     gc.collect()
     torch.cuda.empty_cache()
 
-    finetuner3 = finetune(val_split_path, train_split_path, "True", "True-ft",
-                        plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints",
-                        text_logs_folder="true-ft-logs", epochs=25)
-    finetuner3.trainloop()
-    del finetuner3
-    gc.collect()
-    torch.cuda.empty_cache()
+    # finetuner3 = finetune(val_split_path, train_split_path, "True", "True-ft",
+    #                     plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints",
+    #                     text_logs_folder="true-ft-logs", epochs=25)
+    # finetuner3.trainloop()
+    # del finetuner3
+    # gc.collect()
+    # torch.cuda.empty_cache()
