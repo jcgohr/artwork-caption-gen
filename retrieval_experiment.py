@@ -6,6 +6,7 @@ import json
 import torch
 import csv
 import os
+from tqdm import tqdm
 from PIL import Image
 from ranx import Qrels, Run, evaluate
 from torchvision import transforms
@@ -63,7 +64,7 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
     true_captions = _load_test(test_split_path)
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = blip_itm(pretrained=checkpoint_path, image_size=384, vit="large" if "large" not in os.path.basename(checkpoint_path) else "base")
+    model = blip_itm(pretrained=checkpoint_path, image_size=384, vit="large" if "large" in os.path.basename(checkpoint_path) else "base")
     model.eval()
     model = model.to(device=device)
 
@@ -77,13 +78,13 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
     # Calculate similarity scores between each caption and all images
     logits_per_caption = torch.zeros((num_samples, num_samples), device=device)
     with torch.no_grad():
-        for idx, (_, sample) in enumerate(true_captions.items()):
+        for idx, sample in tqdm(enumerate(true_captions.values()), total=len(true_captions), desc="Processing captions"):
             for img_idx, img in enumerate(all_images):
                 # Calculate similarity score between current caption and each image
                 logits = model(img, sample["caption"], match_head='itc')
                 logits_per_caption[idx, img_idx] = logits[0]
 
-    construct_run(true_captions, logits_per_caption, "BLIP_retrieval", output_path)
+    return construct_run(true_captions, logits_per_caption, "BLIP_retrieval", output_path)
 
 def construct_run(true_captions:list, logits_per_caption:list, run_name:str, output_path:str=None, top_n:int=100):
     caption_ids = list(true_captions.keys()) # for index to id conversion
