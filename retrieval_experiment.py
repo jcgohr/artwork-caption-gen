@@ -5,6 +5,7 @@ from src.parsers.RetrievalExperimentParser import RetrievalExperimentParser
 import json
 import torch
 import csv
+import os
 from PIL import Image
 from ranx import Qrels, Run, evaluate
 from torchvision import transforms
@@ -74,7 +75,7 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
     true_captions = _load_test(test_split_path)
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = blip_itm(pretrained=checkpoint_path, image_size=384, vit='base')
+    model = blip_itm(pretrained=checkpoint_path, image_size=384, vit="large" if "large" not in os.path.basename(checkpoint_path) else "base")
     model.eval()
     model = model.to(device=device)
 
