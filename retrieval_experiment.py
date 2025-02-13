@@ -1,32 +1,14 @@
 from submodules.longclip import model as longclip
 from submodules.BLIP.models.blip_itm import blip_itm
-from src.finetuner import finetune
 from src.parsers.RetrievalExperimentParser import RetrievalExperimentParser
 
 import json
 import torch
-import requests
+import csv
 from PIL import Image
 from ranx import Qrels, Run, evaluate
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-# def get_trained(val_split_path:str, train_split_path:str, caption_field:str, output_path:str, checkpoint_input_path: str = 'submodules/longclip/checkpoints/'):
-#     """
-#     Obtain finetuned longclip checkpoints from input data
-
-#     Args:
-#         val_split_path: Path to validation split json file
-#         train_split_path: Path to train split json file
-#         captions_path: Path to captions json file (generated from src/generate_captions.py)
-#         caption_field: Name of val_split/train_split field in which captions are stored
-#         output_path: Location to save checkpoints
-#         checkpoint_input_path: Path of checkpoints to be finetuned
-#     """
-    
-#     finetune(val_split_path, train_split_path, caption_field, output_path, checkpoint_input_path)
 
 def build_qrel(test_split_path:str, output_path:str=None)->Qrels:
     true_captions = _load_test(test_split_path)
@@ -66,7 +48,7 @@ def longclip_search(checkpoint_path:str, test_split_path:dict, output_path:str=N
     # construct run
     caption_ids = list(true_captions.keys()) # for index to id conversion
     run_dict = {}
-    for idx, (id, sample) in enumerate(true_captions.items()):
+    for idx, (id, _) in enumerate(true_captions.items()):
         top_matching_indices = logits_per_caption[idx, :].argsort(dim=0, descending=True)[:100]
         values = logits_per_caption[idx, :][top_matching_indices]
         run_dict[id] = {}
@@ -112,25 +94,37 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
                 logits = model(img, sample["caption"], match_head='itc')
                 logits_per_caption[idx, img_idx] = logits[0]
 
-    # construct run
+    construct_run(true_captions, logits_per_caption, "BLIP_retrieval", output_path)
+
+def construct_run(true_captions:list, logits_per_caption:list, run_name:str, output_path:str=None, top_n:int=100):
     caption_ids = list(true_captions.keys()) # for index to id conversion
     run_dict = {}
     for idx, (id, _) in enumerate(true_captions.items()):
-        top_matching_indices = logits_per_caption[idx, :].argsort(dim=0, descending=True)[:100]
+        top_matching_indices = logits_per_caption[idx, :].argsort(dim=0, descending=True)[:top_n]
         values = logits_per_caption[idx, :][top_matching_indices]
         run_dict[id] = {}
         for key_idx, value in zip(top_matching_indices, values):
             run_dict[id][caption_ids[key_idx]] = value.item()
-    
-    run = Run(run_dict, "BLIP_retrieval")
+    run = Run(run_dict, run_name)
     if output_path:
         run.save(output_path)
     return run
 
-def eval(run:str, qrel:str, output_path:str)->None:
-    results = evaluate(qrel, run, ["recall@1", "mrr"])
-    with open(output_path, "w", encoding='utf-8') as f:
-        json.dump(results, f, indent=4)
+def eval(run:Run, qrel:str, output_path:str, metrics:list, return_mean:bool)->None:
+    """
+    If return_mean == True, output_path must be a .json. If false, output_path must be a .csv
+    """
+    results = evaluate(qrel, run, metrics, return_mean=return_mean)
+    if not return_mean:
+        with open(output_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["metric"] + list(run.keys()))
+            for metric in metrics:
+                writer.writerow([metric] + results[metric].tolist())
+    else:
+        with open(output_path, "w", encoding='utf-8') as f:
+            json.dump(results, f, indent=4)
+
 
 def _load_test(test_split_path:str)->dict:
     """
@@ -175,4 +169,4 @@ if __name__ == '__main__':
         run = longclip_search(args.checkpoint_path, args.test_split_path, args.save_run)
     elif args.using == "blip":
         run = blip_search(args.checkpoint_path, args.test_split_path, args.save_run)
-    eval(run, qrel, args.results_path)
+    eval(run, qrel, args.results_path, ["precision@1", "mrr"], return_mean=not args.eval_queries)
