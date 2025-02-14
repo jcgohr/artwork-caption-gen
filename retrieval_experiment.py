@@ -62,9 +62,10 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
         Ranx run
     """
     true_captions = _load_test(test_split_path)
+    ids=list(true_captions.keys())
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = blip_itm(pretrained=checkpoint_path, image_size=384, vit="large" if "large" in os.path.basename(checkpoint_path) else "base")
+    model = blip_itm(pretrained=checkpoint_path, image_size=384, vit="large" if "large" in os.path.basename(checkpoint_path) else "base",itc_sim=False)
     model.eval()
     model = model.to(device=device)
 
@@ -75,15 +76,32 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None)
         img = _load_image_for_BLIP(sample["file_path"], device)
         all_images.append(img)
     
+    image_embeddings=[]
+    image_embeddings_computed=False
     # Calculate similarity scores between each caption and all images
     logits_per_caption = torch.zeros((num_samples, num_samples), device=device)
     with torch.no_grad():
         for idx, sample in tqdm(enumerate(true_captions.values()), total=len(true_captions), desc="Processing captions"):
-            for img_idx, img in enumerate(all_images):
-                # Calculate similarity score between current caption and each image
-                logits = model(img, sample["caption"], match_head='itc')
-                logits_per_caption[idx, img_idx] = logits[0]
-
+            text_feat=None
+            
+            # Compute all image features on the first loop, the access with index after.
+            if not image_embeddings_computed:
+                for img in all_images:
+                    # Calculate features score for the caption and each image
+                    text_feat,image_feat = model(img, sample["caption"], match_head='itc')
+                    image_embeddings.append(image_feat)
+                    # logits_per_caption[idx, img_idx] = logits[0]
+                image_embeddings_computed=True
+        
+            # Recompute text feat if not computed
+            if text_feat==None:
+                text_feat,_ = model(img, sample["caption"], match_head='itc')
+                
+            for img_idx in range(len(image_embeddings)):
+                logits_per_caption[idx, img_idx] = (image_embeddings[img_idx] @ text_feat.t())[0]
+                
+            
+        
     return construct_run(true_captions, logits_per_caption, "BLIP_retrieval", output_path)
 
 def construct_run(true_captions:list, logits_per_caption:list, run_name:str, output_path:str=None, top_n:int=100):
