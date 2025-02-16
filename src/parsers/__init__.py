@@ -1,2 +1,3 @@
 from .CaptionGenerationParser import CaptionGenerationParser
 from .CaptionMetricParser import CaptionMetricParser
+from .SignificanceTestingParser import SignificanceTestingParser
