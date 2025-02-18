@@ -17,6 +17,7 @@ class RetrievalExperimentParser:
         self.parser.add_argument("--save_qrel", action="store_true", help="Save qrel file into qrel_path (not needed if qrel_path is pre-made qrel.json file)")
         self.parser.add_argument("--eval_queries", action="store_true", default=False, help="Eval will return a csv with the metrics for each individual query if True, otherwise will just write average to .json.")
         self.parser.add_argument("--save_run", type=str, nargs="?", default=None, metavar="run_path", help="Path to save run file (optional)")
+        self.parser.add_argument("--generated_queries", type=str, nargs="?", default=None, metavar="generated_queries_path", help="Path to generated queries to run retrieval with.")
     
     def _validate_json_file(self, file_path: str) -> bool:
         """
@@ -68,4 +69,6 @@ class RetrievalExperimentParser:
             raise ValueError(f"If running eval per query, input results path: {args.results_path} must be a .csv")
         elif not args.eval_queries and file_type != "JSON":
             raise ValueError(f"If running eval without --eval_queries flag, input results path: {args.results_path} must be a .json")
+        if args.generated_queries and not self._validate_json_file(args.generated_queries):
+            raise ValueError(f"Input generated queries file '{args.generated_queries}' does not exist or is not a valid JSON file")
         return args
