@@ -25,3 +25,19 @@ Artpedia
 ## Installation
 
 ### Requirements
+
+## `retrieval_experiment.py`
+
+
+### BLIP Retrieval With Llama Queries
+```
+python retrieval_experiment.py blip/llava_large/llava_large.pth blip artpedia/artpedia_test.json results/retrieval_experiment/blip_results/Lllama_queries/llava_mean.json results/retrieval_experiment/qrel.json --save_run results/retrieval_experiment/blip_results/Lllama_queries/llava_scores.json --save_qrel --generated_queries captions/generated_queries.json
+```
+
+```
+python retrieval_experiment.py blip/true_large/true_large.pth blip artpedia/artpedia_test.json results/retrieval_experiment/blip_results/Lllama_queries/true_mean.json results/retrieval_experiment/qrel.json --save_run results/retrieval_experiment/blip_results/Lllama_queries/true_scores.json --save_qrel --generated_queries captions/generated_queries.json
+```
+
+```
+python retrieval_experiment.py blip/baseline_large/baseline_large.pth blip artpedia/artpedia_test.json results/retrieval_experiment/blip_results/Lllama_queries/baseline_mean.json results/retrieval_experiment/qrel.json --save_run results/retrieval_experiment/blip_results/Lllama_queries/baseline_run.json --save_qrel --generated_queries captions/generated_queries.json
+```
