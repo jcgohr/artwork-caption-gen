@@ -1,6 +1,6 @@
-[submodule "submodules/longclip"]
-	path = submodules/longclip
-	url = https://github.com/beichenzbc/Long-CLIP.git
 [submodule "submodules/BLIP"]
 	path = submodules/BLIP
 	url = https://github.com/jcgohr/BLIP
+[submodule "submodules/Long_CLIP"]
+	path = submodules/Long_CLIP
+	url = https://github.com/aidan073/Long-CLIP.git
