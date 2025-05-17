@@ -3,7 +3,6 @@ import submodules.Long_CLIP.model as longclip
 import src.utils.mutate as mutate
 
 import os
-import gc
 import json
 import torch
 # import warnings
@@ -163,33 +162,27 @@ class finetune:
             progress_bar = tqdm(enumerate(train_dataloader), total=len(train_dataloader), desc=f'Epoch {epoch + 1}/{EPOCHS}', leave=True)
             for batch_idx, (images, texts) in progress_bar:
                 images, texts = images.to(self.device), texts.to(self.device)
-                
-                optimizer.zero_grad()
                 with torch.autocast(device_type=self.device):
-                    logits_per_image, logits_per_text = model(images, texts)
-                    total_loss = loss_func(logits_per_image, logits_per_text)
+                    total_loss = model(images, texts)
+
                 scaler.scale(total_loss).backward()
-                scaler.step(optimizer)
-                scheduler.step()
-                scaler.update()
-                        
                 # Store gradient norms for plot
                 for name, parameter in model.named_parameters():
                     if parameter.grad is not None:
                         grad_norm = parameter.grad.norm().item()
                         gradient_norms.setdefault(name, []).append(grad_norm)
-                
-                # OPTIONAL DEBUG
-                # use this line to debug (and be spammed with red messages about exploding and vanishing gradients):
-                # monitor_gradient_norms(gradient_norms)
+
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
+                scheduler.step()
                 
                 total_train_loss += total_loss.item()
 
                 progress_bar.set_postfix({'loss': f'{total_train_loss / (batch_idx + 1):.4f}'})
-                with open(f"{self.text_logs_folder}/log_details_train.txt", "a", encoding='utf-8') as f:
+                with open(os.path.join(self.text_logs_folder, "log_details_train.txt"), "a", encoding='utf-8') as f:
                     f.write(f"Epoch {epoch + 1}/{EPOCHS}, Batch: {batch_idx + 1}/{len(train_dataloader)}, Loss: {total_loss.item():.4f}\n")
     
-            
             avg_train_loss = total_train_loss / len(train_dataloader)
             training_losses.append(avg_train_loss)
             self._plot_gradient_norms(gradient_norms, epoch)
@@ -202,8 +195,8 @@ class finetune:
             with torch.no_grad():
                 for images, texts in val_dataloader:
                     images, texts = images.to(self.device), texts.to(self.device)
-                    images, texts = model(images, texts)
-                    val_total_loss += loss_func(images, texts).item()
+                    loss = model(images, texts)
+                    val_total_loss += loss.item()
 
             avg_val_loss = val_total_loss / len(val_dataloader)
             validation_losses.append(avg_val_loss)
@@ -232,16 +225,16 @@ class finetune:
             print(Fore.YELLOW + f"Epoch {epoch + 1}/{EPOCHS} - Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}")
             print(Fore.YELLOW + "============================================================" + Style.RESET_ALL)
             
-            with open(f"{self.text_logs_folder}/log_training.txt", "a", encoding='utf-8') as f:
+            with open(os.path.join(self.text_logs_folder, "log_training.txt"), "a", encoding='utf-8') as f:
                 f.write("======================== STATS =============================\n")
                 f.write(f"Epoch {epoch + 1}/{EPOCHS} - Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}\n")
                 f.write("============================================================\n")
 
-            # Save model every <> epochs + save final model
-            if (self.save_min_loss == False or self.save_min_loss == True and min_flag == True) and (epoch + 1) % 1 == 0 or epoch == EPOCHS - 1:
-                output_path = f"{self.ft_checkpoints_folder}/{self.checkpoint_output_path}{epoch+1}.pt"
-                torch.save(model.state_dict(), output_path)      
-                print(Fore.GREEN + f"Checkpoint saved at: {output_path}" + Style.RESET_ALL)
+            # Save model every epoch unless only saving min
+            if (self.save_min_loss == False or (self.save_min_loss == True and min_flag == True)):
+                save_checkpoint_path = os.path.join(self.output_path, self.ft_checkpoints_folder, f"{epoch+1}.pt")
+                torch.save(model.state_dict(), save_checkpoint_path)      
+                print(Fore.GREEN + f"Checkpoint saved at: {save_checkpoint_path}" + Style.RESET_ALL)
 
     def _adjust_unfreeze_rate(self, epoch, adjust_after=12, increase_rate=2):
         """
@@ -327,31 +320,6 @@ if __name__ == '__main__':
     # # mutate.finetune_dataset_format(train_split_path, train_caption_path, "captions/m_train_captions.json")
     # val_split_path = "captions/m_val_captions.json"
     # train_split_path = "captions/m_train_captions.json"
-
-    # # finetuner1 = finetune(val_split_path, train_split_path, "LlamaCaptioner", "Llama-ft",
-    # #                     plots_folder="llama-ft-plots", ft_checkpoints_folder="llama-ft-checkpoints",
-    # #                     text_logs_folder="llama-ft-logs")
-    # # finetuner1.trainloop()
-
-    # # del finetuner1
-    # # gc.collect()
-    # # torch.cuda.empty_cache()
-
-    # finetuner2 = finetune(val_split_path, train_split_path, "LlavaCaptioner", "Llava-ft",
-    #                     plots_folder="llava-ft-plots", ft_checkpoints_folder="llava-ft-checkpoints-EMERGE3",
-    #                     text_logs_folder="llava-ft-logs", epochs=10)
-    # finetuner2.trainloop()
-    # del finetuner2
-    # gc.collect()
-    # torch.cuda.empty_cache()
-
-    # # finetuner3 = finetune(val_split_path, train_split_path, "True", "True-ft",
-    # #                     plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints-EMERGE",
-    # #                     text_logs_folder="true-ft-logs", epochs=25)
-    # # finetuner3.trainloop()
-    # # del finetuner3
-    # # gc.collect()
-    # # torch.cuda.empty_cache()
 
     parser = FinetuneParser()
     args = parser.parse_args()
