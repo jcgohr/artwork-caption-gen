@@ -1,6 +1,8 @@
-# Get counts of artpedia dataset
-
 import json
+
+"""
+Count attributes of the Artpedia dataset
+"""
 
 def merge_splits(test, train, val):
     with open(test, 'r', encoding='utf-8') as f1:

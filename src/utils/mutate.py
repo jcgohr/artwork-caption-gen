@@ -1,7 +1,9 @@
-# stores functions that mutate data/datasets
-
 import json
 import os
+
+"""
+This script stores any function that mutates the dataset.
+"""
 
 def finetune_dataset_format(metadata_path:str, generated_cap_path:str, output_path:str=None):
     """

@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.getcwd())
 
-import submodules.longclip.model as longclip
+import submodules.Long_CLIP.model as longclip
 import src.utils.mutate as mutate
 
 import json
@@ -81,16 +81,13 @@ class ContrastiveLoss(torch.nn.Module):
 
     def forward(self, logits_per_image, logits_per_text):
         # Normalize the features to avoid overflow or underflow
-        logits_per_image = torch.nn.functional.normalize(logits_per_image, p=2, dim=1)
-        logits_per_text = torch.nn.functional.normalize(logits_per_text, p=2, dim=1)
-
-        # Calculate logits
-        logits = torch.matmul(logits_per_image, logits_per_text.t()) / self.temperature
-        labels = torch.arange(logits.size(0), device=logits.device)
-
+        # logits_per_image = torch.nn.functional.normalize(logits_per_image, p=2, dim=1)
+        # logits_per_text = torch.nn.functional.normalize(logits_per_text, p=2, dim=1)
+        
         # Calculate loss as the mean of the two cross-entropy losses
-        loss_img = self.criterion(logits, labels)
-        loss_txt = self.criterion(logits.t(), labels)
+        labels = torch.arange(logits_per_image.size(0), device=logits_per_image.device)
+        loss_img = self.criterion(logits_per_image, labels)
+        loss_txt = self.criterion(logits_per_text, labels)
 
         return (loss_img + loss_txt) / 2
 
@@ -141,8 +138,8 @@ class finetune:
 
         """CONFIG"""
         EPOCHS = self.epochs
-        learning_rate = 1e-7
-        batch_size = 30
+        learning_rate = 5e-7
+        batch_size = 40
         train_dataloader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True)
         val_dataloader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=True)
         total_steps = len(train_dataloader) * EPOCHS
@@ -203,8 +200,7 @@ class finetune:
             with torch.no_grad():
                 for images, texts in val_dataloader:
                     images, texts = images.to(self.device), texts.to(self.device)
-                    images = model.encode_image(images)
-                    texts = model.encode_text(texts)
+                    images, texts = model(images, texts)
                     val_total_loss += loss_func(images, texts).item()
 
             avg_val_loss = val_total_loss / len(val_dataloader)
@@ -340,15 +336,15 @@ if __name__ == '__main__':
     # torch.cuda.empty_cache()
 
     finetuner2 = finetune(val_split_path, train_split_path, "LlavaCaptioner", "Llava-ft",
-                        plots_folder="llava-ft-plots", ft_checkpoints_folder="llava-ft-checkpoints",
-                        text_logs_folder="llava-ft-logs", epochs=6)
+                        plots_folder="llava-ft-plots", ft_checkpoints_folder="llava-ft-checkpoints-EMERGE3",
+                        text_logs_folder="llava-ft-logs", epochs=10)
     finetuner2.trainloop()
     del finetuner2
     gc.collect()
     torch.cuda.empty_cache()
 
     # finetuner3 = finetune(val_split_path, train_split_path, "True", "True-ft",
-    #                     plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints",
+    #                     plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints-EMERGE",
     #                     text_logs_folder="true-ft-logs", epochs=25)
     # finetuner3.trainloop()
     # del finetuner3

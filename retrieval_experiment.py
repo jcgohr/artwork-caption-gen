@@ -1,4 +1,4 @@
-from submodules.longclip import model as longclip
+from submodules.Long_CLIP import model as longclip
 from submodules.BLIP.models.blip_itm import blip_itm
 from src.parsers.RetrievalExperimentParser import RetrievalExperimentParser
 
@@ -22,7 +22,7 @@ def build_qrel(test_split_path:str, output_path:str=None)->Qrels:
         qrel.save(output_path)
     return qrel
     
-def longclip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None, generated_queries_path:str=None)->Run:
+def longclip_search(checkpoint_path:str, test_split_path:str, output_path:str=None, generated_queries_path:str=None)->Run:
     """
     Use longclip checkpoint for text to image retrieval
 
@@ -38,18 +38,19 @@ def longclip_search(checkpoint_path:str, test_split_path:dict, output_path:str=N
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = longclip.load(checkpoint_path, device=device)
+    model.eval()
 
     caption_embeddings = torch.empty(len(true_captions), 768, device=device)
     image_embeddings = torch.empty(len(true_captions), 768, device=device)
     with torch.no_grad():
-        for idx, sample in enumerate(true_captions.values()):
+        for idx, sample in tqdm(enumerate(true_captions.values()), total=len(true_captions), desc="Performing Retrieval"):
             caption_embeddings[idx, :] = model.encode_text(longclip.tokenize(sample["caption"], truncate=True).to(device))
             image_embeddings[idx, :] = model.encode_image(preprocess(Image.open(sample["file_path"])).unsqueeze(0).to(device))
     logits_per_caption = caption_embeddings @ image_embeddings.T
 
     return construct_run(true_captions, logits_per_caption, "LongCLIP_retrieval", output_path)
 
-def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None, generated_queries_path:str=None)->Run:
+def blip_search(checkpoint_path:str, test_split_path:str, output_path:str=None, generated_queries_path:str=None)->Run:
     """
     Use BLIP checkpoint for text to image retrieval
 
@@ -62,46 +63,21 @@ def blip_search(checkpoint_path:str, test_split_path:dict, output_path:str=None,
         Ranx run
     """
     true_captions = _load_test(test_split_path, generated_queries_path)
-    ids=list(true_captions.keys())
     
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = blip_itm(pretrained=checkpoint_path, image_size=384, vit="large" if "large" in os.path.basename(checkpoint_path) else "base",itc_sim=False)
     model.eval()
     model = model.to(device=device)
-
-    # Pre-load all images and store their embeddings
-    num_samples = len(true_captions)
-    all_images = []
-    for sample in true_captions.values():
-        img = _load_image_for_BLIP(sample["file_path"], device)
-        all_images.append(img)
     
-    image_embeddings=[]
-    image_embeddings_computed=False
-    # Calculate similarity scores between each caption and all images
-    logits_per_caption = torch.zeros((num_samples, num_samples), device=device)
+    caption_embeddings = torch.empty(len(true_captions), 768, device=device)
+    image_embeddings = torch.empty(len(true_captions), 768, device=device)
     with torch.no_grad():
-        for idx, sample in tqdm(enumerate(true_captions.values()), total=len(true_captions), desc="Processing captions"):
-            text_feat=None
-            
-            # Compute all image features on the first loop, the access with index after.
-            if not image_embeddings_computed:
-                for img in all_images:
-                    # Calculate features score for the caption and each image
-                    text_feat,image_feat = model(img, sample["caption"], match_head='itc')
-                    image_embeddings.append(image_feat)
-                    # logits_per_caption[idx, img_idx] = logits[0]
-                image_embeddings_computed=True
-        
-            # Recompute text feat if not computed
-            if text_feat==None:
-                text_feat,_ = model(img, sample["caption"], match_head='itc')
+        for idx, sample in tqdm(enumerate(true_captions.values()), total=len(true_captions), desc="Performing Retrieval"):
+            text_feat,image_feat = model(_load_image_for_BLIP(sample["file_path"], device=device), sample["caption"], match_head='itc')
+            caption_embeddings[idx, :] = text_feat
+            image_embeddings[idx, :] = image_feat
+    logits_per_caption = caption_embeddings @ image_embeddings.T
                 
-            for img_idx in range(len(image_embeddings)):
-                logits_per_caption[idx, img_idx] = (image_embeddings[img_idx] @ text_feat.t())[0]
-                
-            
-        
     return construct_run(true_captions, logits_per_caption, "BLIP_retrieval", output_path)
 
 def construct_run(true_captions:list, logits_per_caption:list, run_name:str, output_path:str=None, top_n:int=100):

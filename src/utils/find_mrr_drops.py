@@ -1,7 +1,9 @@
-# A script used to find the largest MRR (RR in this case) drop between retrieval models
-
 import csv
 import argparse
+
+"""
+A script used to find the largest MRR (RR in this case) drop between retrieval models.
+"""
 
 def read_csv(file_path):
     data = {}
