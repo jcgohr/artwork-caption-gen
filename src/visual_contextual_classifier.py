@@ -1,8 +1,6 @@
-import sys
-import os
-sys.path.append(os.getcwd())
 from src.utils.auto_fewshot import AutoFewShot
 
+import os
 import torch
 import copy
 import json

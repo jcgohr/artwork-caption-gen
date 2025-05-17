@@ -1,6 +1,6 @@
 from submodules.Long_CLIP import model as longclip
 from submodules.BLIP.models.blip_itm import blip_itm
-from src.parsers.RetrievalExperimentParser import RetrievalExperimentParser
+from src.parsers import RetrievalExperimentParser
 
 import json
 import torch

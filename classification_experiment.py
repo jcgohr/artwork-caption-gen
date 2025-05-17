@@ -10,6 +10,9 @@ from VisualContextualClassifier import VisualContextualClassifier
 from tqdm import tqdm
 from sklearn.metrics import f1_score, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 
+"""
+Deprecated experiment, not included in research paper.
+"""
 
 # argparsing
 parser = ClassificationExperimentParser()

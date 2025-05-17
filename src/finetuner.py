@@ -1,13 +1,11 @@
-import sys
-import os
-sys.path.append(os.getcwd())
-
+import src.parsers.LongCLIP_FinetuneParser as FinetuneParser
 import submodules.Long_CLIP.model as longclip
 import src.utils.mutate as mutate
 
+import os
+import gc
 import json
 import torch
-import gc
 # import warnings
 # warnings.filterwarnings("ignore")
 import matplotlib.pyplot as plt
@@ -19,6 +17,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.optim.lr_scheduler import OneCycleLR
 from adabelief_pytorch import AdaBelief
 
+"""
+Long-CLIP finetuner
+"""
 
 class ArtCaptionDataset(Dataset):
     def __init__(self, metadata_path:str, caption_field_name:str, transform=None):
@@ -102,8 +103,9 @@ class finetune:
             train_path: Path to train set
             caption_field_name: Name of caption field within metadata file
             checkpoint_output_path: Desired path to output finetuned checkpoint files
-            checkpoint_input_path: Path of checkpoints to be finetuned
+            epochs: How many epochs to finetune for
             save_min_loss: Only save checkpoints when the validation loss is lower than all previous checkpoints
+            checkpoint_input_path: Path of checkpoints to be finetuned
         """
         self.caption_field_name = caption_field_name
         self.checkpoint_input_path = checkpoint_input_path
@@ -317,36 +319,40 @@ class finetune:
         plt.close()
 
 if __name__ == '__main__':
-    # val_caption_path = "captions/val_captions.json"
-    # train_caption_path = "captions/train_captions.json"
-    # val_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_val.json"
-    # train_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_train.json"
-    # mutate.finetune_dataset_format(val_split_path, val_caption_path, "captions/m_val_captions.json")
-    # mutate.finetune_dataset_format(train_split_path, train_caption_path, "captions/m_train_captions.json")
-    val_split_path = "captions/m_val_captions.json"
-    train_split_path = "captions/m_train_captions.json"
+    # # val_caption_path = "captions/val_captions.json"
+    # # train_caption_path = "captions/train_captions.json"
+    # # val_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_val.json"
+    # # train_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_train.json"
+    # # mutate.finetune_dataset_format(val_split_path, val_caption_path, "captions/m_val_captions.json")
+    # # mutate.finetune_dataset_format(train_split_path, train_caption_path, "captions/m_train_captions.json")
+    # val_split_path = "captions/m_val_captions.json"
+    # train_split_path = "captions/m_train_captions.json"
 
-    # finetuner1 = finetune(val_split_path, train_split_path, "LlamaCaptioner", "Llama-ft",
-    #                     plots_folder="llama-ft-plots", ft_checkpoints_folder="llama-ft-checkpoints",
-    #                     text_logs_folder="llama-ft-logs")
-    # finetuner1.trainloop()
+    # # finetuner1 = finetune(val_split_path, train_split_path, "LlamaCaptioner", "Llama-ft",
+    # #                     plots_folder="llama-ft-plots", ft_checkpoints_folder="llama-ft-checkpoints",
+    # #                     text_logs_folder="llama-ft-logs")
+    # # finetuner1.trainloop()
 
-    # del finetuner1
+    # # del finetuner1
+    # # gc.collect()
+    # # torch.cuda.empty_cache()
+
+    # finetuner2 = finetune(val_split_path, train_split_path, "LlavaCaptioner", "Llava-ft",
+    #                     plots_folder="llava-ft-plots", ft_checkpoints_folder="llava-ft-checkpoints-EMERGE3",
+    #                     text_logs_folder="llava-ft-logs", epochs=10)
+    # finetuner2.trainloop()
+    # del finetuner2
     # gc.collect()
     # torch.cuda.empty_cache()
 
-    finetuner2 = finetune(val_split_path, train_split_path, "LlavaCaptioner", "Llava-ft",
-                        plots_folder="llava-ft-plots", ft_checkpoints_folder="llava-ft-checkpoints-EMERGE3",
-                        text_logs_folder="llava-ft-logs", epochs=10)
-    finetuner2.trainloop()
-    del finetuner2
-    gc.collect()
-    torch.cuda.empty_cache()
+    # # finetuner3 = finetune(val_split_path, train_split_path, "True", "True-ft",
+    # #                     plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints-EMERGE",
+    # #                     text_logs_folder="true-ft-logs", epochs=25)
+    # # finetuner3.trainloop()
+    # # del finetuner3
+    # # gc.collect()
+    # # torch.cuda.empty_cache()
 
-    # finetuner3 = finetune(val_split_path, train_split_path, "True", "True-ft",
-    #                     plots_folder="true-ft-plots", ft_checkpoints_folder="true-ft-checkpoints-EMERGE",
-    #                     text_logs_folder="true-ft-logs", epochs=25)
-    # finetuner3.trainloop()
-    # del finetuner3
-    # gc.collect()
-    # torch.cuda.empty_cache()
+    parser = FinetuneParser()
+    args = parser.parse_args()
+    finetune(val_path=args.val_path, train_path=args.train_path, caption_field_name=args.cap, checkpoint_output_path=args.checkpoint_out, epochs=args.epochs, save_min_loss=args.save_min, checkpoint_input_path=args.checkpoint_in)
