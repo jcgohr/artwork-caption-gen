@@ -4,6 +4,7 @@ blip/
 captions/m_*
 .vscode/
 .env
+art_venv/
 .venv/
 *.pyc
 .vscode

@@ -21,11 +21,14 @@ Long-CLIP finetuner
 """
 
 class ArtCaptionDataset(Dataset):
-    def __init__(self, metadata_path:str, caption_field_name:str, transform=None):
+    def __init__(self, metadata_or_path:str, caption_field_name:str, transform=None):
         self.transform = transform
-        self.caption_field_name = caption_field_name
-        with open(metadata_path,'r',encoding='utf-8') as file:
-            self.metadata=list(json.loads(file.read()).values())
+        self.caption_field_name = caption_field_name 
+        if not isinstance(metadata_or_path, dict):
+            with open(metadata_or_path,'r',encoding='utf-8') as file:
+                self.metadata=list(json.loads(file.read()).values())
+        else:
+            self.metadata = list(metadata_or_path.values())
         self.image_paths = []
         for sample in self.metadata:
             self.image_paths.append(sample["file_path"])
@@ -46,60 +49,15 @@ class ArtCaptionDataset(Dataset):
 
         return image, text.squeeze(0) # Remove the extra dimension
 
-# class ArtCaptionTrainDataset(Dataset):
-#     def __init__(self, metadata_path:str, caption_field_name:str, transform=None):
-#         self.transform = transform
-#         self.caption_field_name = caption_field_name
-#         with open(metadata_path,'r',encoding='utf-8') as file:
-#             self.metadata=list(json.loads(file.read()).values())
-#         self.image_paths = []
-#         for sample in self.metadata:
-#             self.image_paths.append(sample["file_path"])
-
-#     def __len__(self):
-#         return len(self.image_paths)
-
-#     def __getitem__(self, idx):
-#         image_path = self.image_paths[idx]
-#         image = Image.open(image_path).convert('RGB')  # Convert to RGB
-#         if self.transform:
-#             image = self.transform(image)
-
-#         caption = self.metadata[idx][self.caption_field_name]
-#         if(isinstance(caption, list)): # If caption is list of sentences (in case of artpedia), make into single caption
-#             caption = " ".join(caption)
-#         long_text = longclip.tokenize(caption, truncate=True) # Tokenize the caption
-#         short_text = longclip.tokenize(caption.split(". ")[0], truncate=True) # Tokenize short caption
-
-#         return image, long_text.squeeze(0), short_text.squeeze(0)  # Remove the extra dimension
-    
-class ContrastiveLoss(torch.nn.Module):
-    def __init__(self, temperature=0.07):
-        super(ContrastiveLoss, self).__init__()
-        self.temperature = temperature
-        self.criterion = torch.nn.CrossEntropyLoss()
-
-    def forward(self, logits_per_image, logits_per_text):
-        # Normalize the features to avoid overflow or underflow
-        # logits_per_image = torch.nn.functional.normalize(logits_per_image, p=2, dim=1)
-        # logits_per_text = torch.nn.functional.normalize(logits_per_text, p=2, dim=1)
-        
-        # Calculate loss as the mean of the two cross-entropy losses
-        labels = torch.arange(logits_per_image.size(0), device=logits_per_image.device)
-        loss_img = self.criterion(logits_per_image, labels)
-        loss_txt = self.criterion(logits_per_text, labels)
-
-        return (loss_img + loss_txt) / 2
-
 class finetune:
     """
     Finetune longclip checkpoints
     """
-    def __init__(self, val_path:str, train_path:str, caption_field_name:str, checkpoint_output_path:str, epochs:int=6, save_min_loss:bool=True, checkpoint_input_path:str='submodules/longclip/checkpoints/longclip-L.pt', **kwargs):
+    def __init__(self, val_or_path:str, train_or_path:str, caption_field_name:str, checkpoint_output_path:str, epochs:int=6, batch_size:int=40, save_min_loss:bool=False, early_stop:bool=False, checkpoint_input_path:str='submodules/longclip/checkpoints/longclip-L.pt', **kwargs):
         """
         Args:
-            val_path: Path to validation set
-            train_path: Path to train set
+            val_path: Path to validation set, or already loaded set
+            train_path: Path to train set, or already loaded set
             caption_field_name: Name of caption field within metadata file
             checkpoint_output_path: Desired path to output finetuned checkpoint files
             epochs: How many epochs to finetune for
@@ -110,37 +68,41 @@ class finetune:
         self.checkpoint_input_path = checkpoint_input_path
         self.checkpoint_output_path = checkpoint_output_path
         self.epochs = epochs
+        self.batch_size = batch_size
         self.save_min_loss = save_min_loss
+        self.early_stop = early_stop
 
         # Save training plots with matplotlib to:
         self.plots_folder = kwargs.get('plots_folder', 'ft-plots')
+        self.plots_folder = os.path.join(self.checkpoint_output_path, self.plots_folder)
         os.makedirs(self.plots_folder, exist_ok=True)
         # Save model .pt files to: 
         self.ft_checkpoints_folder = kwargs.get('ft_checkpoints_folder', 'ft-checkpoints')
+        self.ft_checkpoints_folder = os.path.join(self.checkpoint_output_path, self.ft_checkpoints_folder)
         os.makedirs(self.ft_checkpoints_folder, exist_ok=True)
         # Save verbose text / training logs to:
         self.text_logs_folder = kwargs.get('text_logs_folder', 'ft-logs')
+        self.text_logs_folder = os.path.join(self.checkpoint_output_path, self.text_logs_folder)
         os.makedirs(self.text_logs_folder, exist_ok=True)
 
         # Load model and preprocessing - path to Long-CLIP model file:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model, self.preprocess = longclip.load(checkpoint_input_path, device=self.device)
 
-        self.train_dataset = ArtCaptionDataset(train_path, self.caption_field_name, transform=self.preprocess)
-        self.val_dataset = ArtCaptionDataset(val_path, self.caption_field_name, transform=self.preprocess)
+        self.train_dataset = ArtCaptionDataset(train_or_path, self.caption_field_name, transform=self.preprocess)
+        self.val_dataset = ArtCaptionDataset(val_or_path, self.caption_field_name, transform=self.preprocess)
 
     def trainloop(self):
         """
         Complete training loop. Outputs finetuned checkpoints in designated directory, as well as additional logs
         """
-        loss_func = ContrastiveLoss()
         training_losses = []
         validation_losses = []
 
         """CONFIG"""
         EPOCHS = self.epochs
         learning_rate = 5e-7
-        batch_size = 40
+        batch_size = self.batch_size
         train_dataloader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True)
         val_dataloader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=True)
         total_steps = len(train_dataloader) * EPOCHS
@@ -150,6 +112,7 @@ class finetune:
         scheduler = OneCycleLR(optimizer, max_lr=learning_rate, total_steps=total_steps, pct_start=0.1, anneal_strategy='linear')
         
         min_val_loss = 0 # save only min val loss checkpoints if save_min_loss arg == True
+        last_saved = None # track the checkpoint that is saved last
         model = self.model.float()
         print(f"Precision: {model.dtype}")
         print(f'Total batches: {len(train_dataloader)} @ Batch Size: {batch_size}')
@@ -186,6 +149,7 @@ class finetune:
             avg_train_loss = total_train_loss / len(train_dataloader)
             training_losses.append(avg_train_loss)
             self._plot_gradient_norms(gradient_norms, epoch)
+            del gradient_norms
 
             # Validation
             model.eval()    
@@ -203,6 +167,7 @@ class finetune:
 
             if epoch==0:
                 min_val_loss = avg_val_loss
+                min_flag = True
             else:
                 if avg_val_loss <= min_val_loss:
                     min_val_loss = avg_val_loss
@@ -230,11 +195,19 @@ class finetune:
                 f.write(f"Epoch {epoch + 1}/{EPOCHS} - Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}\n")
                 f.write("============================================================\n")
 
+            # Check early stopping
+            if self.early_stop and not min_flag:
+                print("Early stopping due to val loss increase.")
+                return last_saved
+
             # Save model every epoch unless only saving min
             if (self.save_min_loss == False or (self.save_min_loss == True and min_flag == True)):
-                save_checkpoint_path = os.path.join(self.output_path, self.ft_checkpoints_folder, f"{epoch+1}.pt")
-                torch.save(model.state_dict(), save_checkpoint_path)      
+                save_checkpoint_path = os.path.join(self.ft_checkpoints_folder, f"{epoch+1}.pt")
+                torch.save(model.state_dict(), save_checkpoint_path)
+                last_saved = f"{epoch+1}.pt"      
                 print(Fore.GREEN + f"Checkpoint saved at: {save_checkpoint_path}" + Style.RESET_ALL)
+        
+        return last_saved
 
     def _adjust_unfreeze_rate(self, epoch, adjust_after=12, increase_rate=2):
         """
@@ -305,22 +278,14 @@ class finetune:
         if use_log_scale:
             plt.yscale('log')
             plt.title(f'Gradient Norms for Epoch {epoch}{" - Log Scale" if use_log_scale else ""}')
-            plt.savefig(f"{self.plots_folder}/gradient_norms_epoch_{epoch}_log.png")
+            plt.savefig(os.path.join(self.plots_folder, f"gradient_norms_epoch_{epoch}_log.png"))
         else:
-            plt.savefig(f"{self.plots_folder}/gradient_norms_epoch_{epoch}.png")
+            plt.savefig(os.path.join(self.plots_folder, f"gradient_norms_epoch_{epoch}.png"))
         
         plt.close()
 
 if __name__ == '__main__':
-    # # val_caption_path = "captions/val_captions.json"
-    # # train_caption_path = "captions/train_captions.json"
-    # # val_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_val.json"
-    # # train_split_path = "/mnt/netstore1_home/aidan.bell@maine.edu/artpedia/artpedia_train.json"
-    # # mutate.finetune_dataset_format(val_split_path, val_caption_path, "captions/m_val_captions.json")
-    # # mutate.finetune_dataset_format(train_split_path, train_caption_path, "captions/m_train_captions.json")
-    # val_split_path = "captions/m_val_captions.json"
-    # train_split_path = "captions/m_train_captions.json"
-
     parser = FinetuneParser()
     args = parser.parse_args()
-    finetune(val_path=args.val_path, train_path=args.train_path, caption_field_name=args.cap, checkpoint_output_path=args.checkpoint_out, epochs=args.epochs, save_min_loss=args.save_min, checkpoint_input_path=args.checkpoint_in)
+    finetuner = finetune(val_path=args.val_path, train_path=args.train_path, caption_field_name=args.cap, checkpoint_output_path=args.checkpoint_out, epochs=args.epochs, save_min_loss=args.save_min, checkpoint_input_path=args.checkpoint_in)
+    finetuner.trainloop()

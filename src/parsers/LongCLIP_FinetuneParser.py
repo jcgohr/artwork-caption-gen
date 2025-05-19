@@ -5,7 +5,7 @@ class FinetuneParser:
         self.parser = argparse.ArgumentParser(description="Finetune LongCLIP")
         self._add_arguments()
 
-    def parser_args(self):
+    def parse_args(self):
         return self.parser.parse_args()
 
     def _add_arguments(self):
