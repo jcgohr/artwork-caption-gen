@@ -55,7 +55,7 @@ def blip_search(checkpoint_path:str, test_split_path:str, output_path:str=None, 
     Use BLIP checkpoint for text to image retrieval
 
     Args:
-        checkpoint_path: Path to longclip checkpoint file
+        checkpoint_path: Path to BLIP checkpoint file
         test_split_path: Path to test split json file
         output_path (optional): Save run to this path
 
@@ -69,8 +69,8 @@ def blip_search(checkpoint_path:str, test_split_path:str, output_path:str=None, 
     model.eval()
     model = model.to(device=device)
     
-    caption_embeddings = torch.empty(len(true_captions), 768, device=device)
-    image_embeddings = torch.empty(len(true_captions), 768, device=device)
+    caption_embeddings = torch.empty(len(true_captions), 256, device=device)
+    image_embeddings = torch.empty(len(true_captions), 256, device=device)
     with torch.no_grad():
         for idx, sample in tqdm(enumerate(true_captions.values()), total=len(true_captions), desc="Performing Retrieval"):
             text_feat,image_feat = model(_load_image_for_BLIP(sample["file_path"], device=device), sample["caption"], match_head='itc')
