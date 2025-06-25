@@ -1,43 +1,63 @@
 # Artwork Caption Generation
 
-Jimmy Gore, Aidan Bell
+Paper link to be provided.
 
 ## Description
 
-This repo is used for analyzing the capabilities of Multimodal Large Language Models (MLLMs) as artwork captioners.
+This repo holds the code and experiments for our SIGIR 2025 short paper titled: "Augmenting Cross-Modal Art Retrieval: The Role of MLLM-Synthesized Captions". 
+Our research explores the capabilities of Multimodal Large Language Models (MLLMs) as artwork captioners, with emphasis on the following two research questions.
 
-## Research questions
+## Research questions  
 
-### Q1: Can MLLMs provide high quality captions for paintings?
+#### Q1: Is the quality of MLLM-generated artwork captions comparable to that of human-annotated captions? 
 
-### Q2: Can MLLM generated painting captions be effective for fine-tuning?
+#### Q2: Are MLLM-generated artwork captions adequate for fine-tuning cross-modal retrieval models?  
 
-## Data
-
-Artpedia
-
-- 2930 Paintings, and their associated captions + metadata. Captions are organized into "visual" or "contextual" bins for each painting. https://aimagelab.ing.unimore.it/imagelab/page.asp?IdPage=35
-
-## Related Research
-
-- Bucciarelli, D., Moratelli, N., Cornia, M., Baraldi, L., Cucchiara, R., et al.: Personalizing Multimodal Large Language Models for Image Captioning: An Experimental Analysis. In: ECCV Workshops (2024).
+## Paper TL;DR  
+We compare LLaVA generated captions to ground-truth (human) captions of the [Artpedia](https://aimagelab.ing.unimore.it/imagelab/page.asp?IdPage=35) dataset. **Experiment #1:** We use several automatic text-similarity metrics (e.g. BERTScore, SPICE) and find that the semantic similarity between the synthetic/real captions is high, but lexical similarity is low. **Experiment #2:** We fine-tune two cross-modal retrieval models, BLIP and Long-CLIP, seperately on the generated and real captions. We compare the performance of the models when finetuned on sythetic versus real captions. We find that the models perform similarly with synthetic data, suggesting that MLLM-generated captions are sufficient for fine-tuning retrieval models.  
 
 ## Installation
 
-### Requirements
+**1.** Clone the repository:
 
-## `retrieval_experiment.py`
+   ```
+   git clone --recursive https://github.com/jcgohr/artwork-caption-gen.git
+   cd artwork-caption-gen
+   ```
 
+**2.** **TODO: Add remove corrupted script, add path modifier script...** ~~Download the [Artpedia dataset](https://aimagelab.ing.unimore.it/imagelab/page.asp?IdPage=35), and extract it.~~
 
-### BLIP Retrieval With Llama Queries
+**3.** Download the [Long-CLIP checkpoint](https://huggingface.co/BeichenZhang/LongCLIP-L) and place it in 'submodules/Long_CLIP/checkpoints/'
+
+**4.** Install [Python 3.12](https://www.python.org/downloads/release/python-3120/)
+
+**5.** Install the required dependencies:
 ```
-python retrieval_experiment.py blip/llava_large/llava_large.pth blip artpedia/artpedia_test.json results/retrieval_experiment/blip_results/Lllama_queries/llava_mean.json results/retrieval_experiment/qrel.json --save_run results/retrieval_experiment/blip_results/Lllama_queries/llava_scores.json --save_qrel --generated_queries captions/generated_queries.json
+pip install -r requirements.txt
 ```
 
+## Run/Reproduce  
+For ease of use, we provide a pipeline for each part of the experiment.  
+### 1. Automatic Text-Similarity Metrics  
 ```
-python retrieval_experiment.py blip/true_large/true_large.pth blip artpedia/artpedia_test.json results/retrieval_experiment/blip_results/Lllama_queries/true_mean.json results/retrieval_experiment/qrel.json --save_run results/retrieval_experiment/blip_results/Lllama_queries/true_scores.json --save_qrel --generated_queries captions/generated_queries.json
+TBD...
 ```
-
+### 2. Long-CLIP Fine-tuning + Evaluation   
 ```
-python retrieval_experiment.py blip/baseline_large/baseline_large.pth blip artpedia/artpedia_test.json results/retrieval_experiment/blip_results/Lllama_queries/baseline_mean.json results/retrieval_experiment/qrel.json --save_run results/retrieval_experiment/blip_results/Lllama_queries/baseline_run.json --save_qrel --generated_queries captions/generated_queries.json
+python -m longclip_pipeline --output_path OUTPUT_PATH --artpedia_path ARTPEDIA_PATH --checkpoint_in CHECKPOINT_IN [--epochs EPOCHS] [--batch_size BATCH_SIZE]
 ```
+Example:
+```
+python -m longclip_pipeline --output_path longclip_experiment --artpedia_path storage/artpedia --checkpoint_in submodules/Long_CLIP/checkpoints/longclip-L.pt --epochs 4 --batch_size 30
+```
+### 3. BLIP Fine-tuning + Evaluation  
+```
+python -m blip_pipeline --output_path OUTPUT_PATH --artpedia_path ARTPEDIA_PATH [--batch_size BATCH_SIZE] [--gpus GPUS]
+```
+Example:
+```
+python -m blip_pipeline --output_path blip_experiment --artpedia_path storage/artpedia --batch_size 16
+```
+## Extra
+**Note**  
+The pipelines may be very slow depending on hardware. The BLIP fine-tuning especially requires a large amount of VRAM for large batch-sizes. Due to this, some of the hyper-parameters may not be exactly the same by default. Please refer to the paper for specific fine-tuning hyperparameters. 
