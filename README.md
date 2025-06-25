@@ -38,25 +38,24 @@ pip install -r requirements.txt
 
 ## Run/Reproduce  
 For ease of use, we provide a pipeline for each part of the experiment.  
-### 1. Automatic Text-Similarity Metrics  
+
+**1. Automatic Text-Similarity Metrics**
 ```
 TBD...
 ```
-### 2. Long-CLIP Fine-tuning + Evaluation   
+**2. Long-CLIP Fine-tuning + Evaluation**
 ```
-python -m longclip_pipeline --output_path OUTPUT_PATH --artpedia_path ARTPEDIA_PATH --checkpoint_in CHECKPOINT_IN [--epochs EPOCHS] [--batch_size BATCH_SIZE]
+Usage: python -m longclip_pipeline --output_path OUTPUT_PATH --artpedia_path ARTPEDIA_PATH --checkpoint_in CHECKPOINT_IN [--epochs EPOCHS] [--batch_size BATCH_SIZE]
 ```
-Example:
 ```
-python -m longclip_pipeline --output_path longclip_experiment --artpedia_path storage/artpedia --checkpoint_in submodules/Long_CLIP/checkpoints/longclip-L.pt --epochs 4 --batch_size 30
+Example: python -m longclip_pipeline --output_path longclip_experiment --artpedia_path storage/artpedia --checkpoint_in submodules/Long_CLIP/checkpoints/longclip-L.pt --epochs 4 --batch_size 30
 ```
-### 3. BLIP Fine-tuning + Evaluation  
+**3. BLIP Fine-tuning + Evaluation**
 ```
-python -m blip_pipeline --output_path OUTPUT_PATH --artpedia_path ARTPEDIA_PATH [--batch_size BATCH_SIZE] [--gpus GPUS]
+Usage: python -m blip_pipeline --output_path OUTPUT_PATH --artpedia_path ARTPEDIA_PATH [--batch_size BATCH_SIZE] [--gpus GPUS]
 ```
-Example:
 ```
-python -m blip_pipeline --output_path blip_experiment --artpedia_path storage/artpedia --batch_size 16
+Example: python -m blip_pipeline --output_path blip_experiment --artpedia_path storage/artpedia --batch_size 16
 ```
 ## Extra
 **Note**  
